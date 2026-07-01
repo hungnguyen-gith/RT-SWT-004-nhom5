@@ -1,0 +1,424 @@
+function_id,language,cc_band,cc_value,source_code,annotator_dg,annotator_rw,final_label,notes
+PY-001,python,CC5-8,5,"def set_merge(merge_criterion, tolerance=0.05):
+    """"""
+    Sets merge_accept function for merge_subcluster, based on user specified merge_criteria. 
+
+    Radius: merge subcluster based on comparison to centroid of the cluster
+    Diameter: merge subcluster based on instant Tanimoto similarity of cluster
+    Tolerance: applies tolerance threshold to diameter merge criteria, which will merge subcluster with stricter threshold for newly added molecules
+
+    Parameters:
+    -----------
+    merge_criterion: str(); 
+                        radius, diameter or tolerance
+    tolerance: float; 
+                        sets penalty value for similarity threshold when callng tolerance merge criteria
+
+    Returns:
+    --------
+    merge_accept(): function 
+                        if cluster is accepted to merge, merge the cluster based on the criteria specified
+    """"""
+    if merge_criterion == 'radius':
+        def merge_accept(threshold, new_ls, new_centroid, new_n, old_ls, nom_ls, old_n, nom_n):
+            jt_sim = jt_isim(new_ls + new_centroid, new_n + 1) * (new_n + 1) - jt_isim(new_ls, new_n) * (new_n - 1)
+            return jt_sim >= threshold*2
+    elif merge_criterion == 'diameter':
+        def merge_accept(threshold, new_ls, new_centroid, new_n, old_ls, nom_ls, old_n, nom_n): 
+            jt_radius = jt_isim(new_ls, new_n)
+            return jt_radius >= threshold
+    elif merge_criterion == 'tolerance_tough':
+        def merge_accept(threshold, new_ls, new_centroid, new_n, old_ls, nom_ls, old_n, nom_n):
+            jt_radius = jt_isim(new_ls, new_n)
+            if jt_radius < threshold:
+                return False
+            else:
+                if old_n == 1 and nom_n == 1:
+                    return True
+                elif nom_n == 1:
+                    return (jt_isim(old_ls + nom_ls, old_n + 1) * (old_n + 1) - jt_isim(old_ls, old_n) * (old_n - 1))/2 >= jt_isim(old_ls, old_n) - tolerance and (jt_radius >= threshold)
+                else:
+                    return (jt_isim(old_ls + nom_ls, old_n + nom_n) * (old_n + nom_n) * (old_n + nom_n - 1) 
+                    - jt_isim(old_ls, old_n) * old_n * (old_n - 1)
+                    - jt_isim(nom_ls, nom_n) * nom_n * (nom_n - 1))/(2 * old_n * nom_n) >= jt_isim(old_ls, old_n) - tolerance and (jt_radius >= threshold)
+    elif merge_criterion == 'tolerance':
+        def merge_accept(threshold, new_ls, new_centroid, new_n, old_ls, nom_ls, old_n, nom_n):
+            jt_radius = jt_isim(new_ls, new_n)
+            if jt_radius < threshold:
+                return False
+            else:
+                if old_n == 1 and nom_n == 1:
+                    return True
+                elif nom_n == 1:
+                    return (jt_isim(old_ls + nom_ls, old_n + 1) * (old_n + 1) - jt_isim(old_ls, old_n) * (old_n - 1))/2 >= jt_isim(old_ls, old_n) - tolerance and (jt_radius >= threshold)
+                else:
+                    return True
+    globals()['merge_accept'] = merge_accept",Maintainable,Maintainable,Maintainable,
+PY-002,python,CC5-8,8,"def _split_node(node, threshold, branching_factor, singly):
+    """"""The node has to be split if there is no place for a new subcluster
+    in the node.
+    1. Two empty nodes and two empty subclusters are initialized.
+    2. The pair of distant subclusters are found.
+    3. The properties of the empty subclusters and nodes are updated
+       according to the nearest distance between the subclusters to the
+       pair of distant subclusters.
+    4. The two nodes are set as children to the two subclusters.
+    """"""
+    new_subcluster1 = _BFSubcluster()
+    new_subcluster2 = _BFSubcluster()
+    new_node1 = _BFNode(
+        threshold=threshold,
+        branching_factor=branching_factor,
+        is_leaf=node.is_leaf,
+        n_features=node.n_features,
+        dtype=node.init_centroids_.dtype,
+    )
+    new_node2 = _BFNode(
+        threshold=threshold,
+        branching_factor=branching_factor,
+        is_leaf=node.is_leaf,
+        n_features=node.n_features,
+        dtype=node.init_centroids_.dtype,
+    )
+    new_subcluster1.child_ = new_node1
+    new_subcluster2.child_ = new_node2
+
+    if node.is_leaf:
+        if node.prev_leaf_ is not None:
+            node.prev_leaf_.next_leaf_ = new_node1
+        new_node1.prev_leaf_ = node.prev_leaf_
+        new_node1.next_leaf_ = new_node2
+        new_node2.prev_leaf_ = new_node1
+        new_node2.next_leaf_ = node.next_leaf_
+        if node.next_leaf_ is not None:
+            node.next_leaf_.prev_leaf_ = new_node2  
+    
+    # O(N) implementation of max separation
+    farthest_idx, node1_dist, node2_dist = max_separation(node.centroids_)    
+    # Notice that max_separation is returning similarities and not distances
+    node1_closer = node1_dist > node2_dist
+    # Make sure node1 is closest to itself even if all distances are equal.
+    # This can only happen when all node.centroids_ are duplicates leading to all
+    # distances between centroids being zero.
+    node1_closer[farthest_idx[0]] = True
+
+    for idx, subcluster in enumerate(node.subclusters_):
+        if node1_closer[idx]:
+            new_node1.append_subcluster(subcluster)
+            new_subcluster1.update(subcluster)
+            if not singly:
+                subcluster.parent_ = new_subcluster1
+        else:
+            new_node2.append_subcluster(subcluster)
+            new_subcluster2.update(subcluster)
+            if not singly:
+                subcluster.parent_ = new_subcluster2
+    return new_subcluster1, new_subcluster2",Maintainable,Maintainable,Maintainable,
+PY-003,python,CC13-15,14,"def insert_bf_subcluster(self, subcluster, set_bits, ps, singly):
+        """"""Insert a new subcluster into the node.""""""
+        if not self.subclusters_:
+            self.append_subcluster(subcluster)
+            return False
+
+        threshold = self.threshold
+        branching_factor = self.branching_factor
+        # We need to find the closest subcluster among all the
+        # subclusters so that we can insert our new subcluster.
+        a = np.dot(self.centroids_, subcluster.centroid_)
+        sim_matrix = a / (np.sum(self.centroids_, axis = 1) + set_bits - a)
+        closest_index = np.argmax(sim_matrix)
+        closest_subcluster = self.subclusters_[closest_index]
+
+        # If the subcluster has a child, we need a recursive strategy.
+        if closest_subcluster.child_ is not None:
+            ps = closest_subcluster
+            split_child = closest_subcluster.child_.insert_bf_subcluster(subcluster, set_bits, ps, singly)
+
+            if not split_child:
+                # If it is determined that the child need not be split, we
+                # can just update the closest_subcluster
+                closest_subcluster.update(subcluster)
+                self.init_centroids_[closest_index] = self.subclusters_[closest_index].centroid_
+                self.centroids_[closest_index] = self.subclusters_[closest_index].centroid_
+                return False
+
+            # things not too good. we need to redistribute the subclusters in
+            # our child node, and add a new subcluster in the parent
+            # subcluster to accommodate the new child.
+            else:
+                new_subcluster1, new_subcluster2 = _split_node(
+                    closest_subcluster.child_,
+                    threshold,
+                    branching_factor,
+                    singly
+                )
+                self.update_split_subclusters(
+                    closest_subcluster, new_subcluster1, new_subcluster2, singly
+                )
+
+                if len(self.subclusters_) > self.branching_factor:
+                    return True
+                return False
+
+        # good to go!
+        else:
+            merged = closest_subcluster.merge_subcluster(subcluster, self.threshold)
+            if merged:
+                self.centroids_[closest_index] = closest_subcluster.centroid_
+                self.init_centroids_[closest_index] = closest_subcluster.centroid_
+                if not singly:
+                    closest_subcluster.parent_ = ps
+                return False
+
+            # not close to any other subclusters, and we still
+            # have space, so add.
+            elif len(self.subclusters_) < self.branching_factor:
+                self.append_subcluster(subcluster)
+                if not singly:
+                    closest_subcluster.parent_ = ps
+                return False
+
+            # We do not have enough space nor is it closer to an
+            # other subcluster. We need to split.
+            else:
+                self.append_subcluster(subcluster)
+                return True",Hard,Hard,Hard,
+PY-004,python,CC13-15,14,"def fit_BFs(self, X):
+        """"""
+        Method to fit a BitBirch model with the given BitFeatyres.
+
+        Parameters:
+        -----------
+        X : list of BitFeatures
+
+        Returns:
+        --------
+        self
+        """"""
+
+        # Check that the input is a list of BitFeatures
+        if type(X) != list or len(X[0]) != 3:
+            raise ValueError('The input must be a list of BitFeatures')
+        
+        threshold = self.threshold
+        branching_factor = self.branching_factor
+
+        n_features = len(X[0][1])
+        d_type = X[0][1].dtype
+
+        # If partial_fit is called for the first time or fit is called, we
+        # start a new tree.
+        if self.first_call:
+            # The first root is the leaf. Manipulate this object throughout.
+            self.root_ = _BFNode(
+                threshold=threshold,
+                branching_factor=branching_factor,
+                is_leaf=True,
+                n_features=n_features,
+                dtype=d_type,
+            )
+    
+            # To enable getting back subclusters.
+            self.dummy_leaf_ = _BFNode(
+                threshold=threshold,
+                branching_factor=branching_factor,
+                is_leaf=True,
+                n_features=n_features,
+                dtype=d_type,
+            )
+            self.dummy_leaf_.next_leaf_ = self.root_
+            self.root_.prev_leaf_ = self.dummy_leaf_
+
+        for sample in iter(X):
+
+            cluster = _BFSubcluster()
+            cluster.n_samples_, cluster.linear_sum_, cluster.mol_indices = sample[0], sample[1], sample[2]
+            cluster.centroid_ = calc_centroid(cluster.linear_sum_, cluster.n_samples_)
+
+            set_bits = np.sum(cluster.centroid_)
+            split = self.root_.insert_bf_subcluster(cluster, set_bits, cluster.parent_, True)
+
+            if split:
+                new_subcluster1, new_subcluster2 = _split_node(
+                    self.root_, threshold, branching_factor, True
+                )
+                del self.root_
+                self.root_ = _BFNode(
+                    threshold=threshold,
+                    branching_factor=branching_factor,
+                    is_leaf=False,
+                    n_features=n_features,
+                    dtype=d_type,
+                )
+                self.root_.append_subcluster(new_subcluster1)
+                self.root_.append_subcluster(new_subcluster2)
+            self.index_tracker += 1
+
+        centroids = np.concatenate([leaf.centroids_ for leaf in self._get_leaves()])
+        self.subcluster_centers_ = centroids
+        self._n_features_out = self.subcluster_centers_.shape[0]
+        
+        self.first_call = False
+        return self",Maintainable,Maintainable,Maintainable,
+PY-008,python,CC5-8,6,"def _get_BFs(self):
+        """"""Method to return the BitFeatures of the leaves""""""
+        if self.first_call:
+            raise ValueError('The model has not been fitted yet.')
+        
+        BFs = []
+        for leaf in self._get_leaves():
+            for subcluster in leaf.subclusters_:
+                BFs.append(subcluster)
+
+        # Sort the BitFeatures by the number of samples in the cluster
+        BFs = sorted(BFs, key = lambda x: x.n_samples_, reverse = True)
+
+        return BFs",Hard,Hard,Hard,
+PY-011,python,CC9-12,11,"def _get_top_cluster_params(self, X, top):
+        """"""Method to recieve the cluster mol indices, centroids, and fingerprints of the top user-specified clusters.
+        
+        Parameters
+        ----------
+        X : {array-like, sparse matrix} of shape (n_samples, n_features)
+            Input data.
+        
+        top: int
+            default: 20; specifies number of top largest clusters to reassign
+
+        Returns
+        -------
+        top_clusters: sorted list
+            list of len top; containing the cluster mol ids of given clusters
+
+        centroids: np.array; shape (top, n_features)
+            centroids of the top clusters
+
+        mol_indices: list of indices with the top clusters; len of number of molecules in all top clusters
+
+        data_top_clusters: np.array; shape (n_molecules, n_features)
+            fingerprints of the molecules in the top clusters
+        """"""
+        top_clusters = sorted(self.get_cluster_mol_ids(), key=len, reverse=True)[:top]
+        centroids = np.array([self._calc_centroid(X, c) for c in top_clusters])
+        mol_indices = [i for c in top_clusters for i in c]
+        data_top_clusters = np.array([X[i] for i in mol_indices])
+        assert data_top_clusters.shape[0] == len(mol_indices)
+
+        return top_clusters, centroids, mol_indices, data_top_clusters",Hard,Maintainable,Hard,
+PY-015,python,CC9-12,9,"def check_cluster_structure(brc):
+    total_mol = 0
+    mol_j_vals = []
+    for index, node in enumerate(brc._get_leaves()):
+        for c in node.subclusters_:
+            mol_j = c.mol_indices
+            total_mol+=c.n_samples_
+            mol_j_vals.append(mol_j)
+            assert c.n_samples_ == len(mol_j), f""Fatal! N_j:{c.n_samples_} and len(mol_j):{len(mol_j)} are incompatible.""
+    print('Check to ensure all N_j values are identical to all len(mol_j) values passed.')
+
+
+    print('Total number of molecules:', total_mol)
+
+    mol_j_vals = [i for cl in mol_j_vals for i in cl]
+
+    unique = []
+    for m in mol_j_vals:
+        if m in unique:
+            print(f'Fatal! Index {m} is repeating!')
+        else:
+            msg = 'There are no repeated indices.'
+        unique.append(m)
+    if msg:
+        print(msg)
+
+    print(f'The range of molecular indices is {min(mol_j_vals)} thru {max(mol_j_vals)}')",Hard,Hard,Hard,
+PY-019,python,CC9-12,9,"def clust_dispersion(clusters, reps = False, rep_type = ""centroid"", curated = False, min_size = 1):
+    """"""Cluster dispersion
+    
+    cd = isim(representatives)/<isim(clusters)>
+    
+    clusters : list of np.arrays containing the clusters
+    
+    reps : {bool, list} indicates if cluster representatives are given
+    
+    rep_type : type of representative, medoid or centroid
+    
+    curated : bool indicates if singletons have been removed
+    
+    min_size : int size below which clusters will be ignored
+    
+    Note
+    ----
+    Lower values are better TODO: DOUBLE CHECK THIS!!!!
+    """"""
+    if not curated:
+        clusters = remove_singles(clusters, min_size)
+    
+    n_clusters = len(clusters)
+    
+    if n_clusters == 1:
+        return -1
+    
+    isim_clusts = 0
+    
+    if not reps:
+        representatives = []
+    else:
+        representatives = reps
+    
+    for clust in clusters:
+        n_samples = len(clust)
+        linear_sum = np.sum(clust, axis=0)
+        isim_clusts += jt_isim(linear_sum, n_samples)
+        if not reps:
+            if rep_type == 'centroid':
+                representatives.append(calculate_centroid(linear_sum, n_samples))
+            elif rep_type == 'medoid':
+                medoid = calculate_medoid(clust)
+                representatives.append(clust[medoid])
+    
+    av_isim_clusts = isim_clusts/n_clusters
+    
+    representatives = np.array(representatives)
+    rep_linear_sum = np.sum(representatives, axis=0)
+    rep_isim = jt_isim(rep_linear_sum, n_clusters)
+
+    try:
+        value =  rep_isim/av_isim_clusts
+    except:
+        value = 0
+    
+    return value",Hard,Hard,Hard,
+PY-049,python,CC5-8,5,"def merge_intervals(intervals):
+    if not intervals:
+        return []
+    intervals = sorted(intervals, key=lambda x: x[0])
+    merged = [intervals[0]]
+    for current in intervals[1:]:
+        last = merged[-1]
+        if current[0] <= last[1]:
+            if current[1] > last[1]:
+                merged[-1] = (last[0], current[1])
+        else:
+            merged.append(current)
+    return merged",Maintainable,Maintainable,Maintainable,
+PY-054,python,CC9-12,11,"def build_query_string(params, sort_keys=True, exclude_none=True, encode_spaces=True):
+    items = list(params.items())
+    if sort_keys:
+        items.sort(key=lambda kv: kv[0])
+    parts = []
+    for key, value in items:
+        if value is None:
+            if exclude_none:
+                continue
+            value = """"
+        if isinstance(value, bool):
+            value = ""true"" if value else ""false""
+        elif isinstance(value, (list, tuple)):
+            for v in value:
+                encoded_v = str(v).replace("" "", ""+"") if encode_spaces else str(v)
+                parts.append(f""{key}={encoded_v}"")
+            continue
+        encoded_value = str(value).replace("" "", ""+"") if encode_spaces else str(value)
+        parts.append(f""{key}={encoded_value}"")
+    return ""&"".join(parts)",Maintainable,Maintainable,Maintainable,

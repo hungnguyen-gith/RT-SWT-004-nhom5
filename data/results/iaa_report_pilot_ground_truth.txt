@@ -1,0 +1,11 @@
+======================================================================
+IAA REPORT — pilot_ground_truth.csv
+So items: 10 | Annotators: ['annotator_dg', 'annotator_rw']
+Nguong du an (proposal SS5.4): Kappa >= 0.7
+======================================================================
+
+[1] Cohen's Kappa (pairwise)
+  annotator_dg vs annotator_rw: Kappa = 0.800 (Almost Perfect) | %% agreement = 90.0% | [PASS]
+
+[3] Ket luan
+  ✅ PASS — Kappa = 0.800 >= 0.7. Dung ground truth nay de chay tiep pipeline.
