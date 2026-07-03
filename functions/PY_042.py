@@ -1,3 +1,6 @@
+import numpy as np
+
+
 def train(self, buffer, update_actor=True):
         """
         Perform a training update using minibatch GD.

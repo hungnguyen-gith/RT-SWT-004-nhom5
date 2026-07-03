@@ -1,3 +1,9 @@
+import os
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+
 def init_plot(method, title=None):
     csv_file = f"data/{method}_cluster_metrics.csv"
 

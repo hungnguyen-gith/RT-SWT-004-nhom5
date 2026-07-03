@@ -1,3 +1,11 @@
+import numpy as np
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+from sklearn.preprocessing import StandardScaler
+from sklearn.manifold import TSNE
+
+
 def tsne_plot(brc, fps, method='', title=None):
     clusters = brc.get_cluster_mol_ids()
     sort_clusters = sorted(clusters, key=lambda x: len(x), reverse=True)[:20]

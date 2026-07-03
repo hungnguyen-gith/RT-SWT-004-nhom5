@@ -1,3 +1,6 @@
+import numpy as np
+
+
 def act(self, cent_obs, obs, rnn_states_actor, masks, available_actions=None, deterministic=True):
         """
         Compute actions using the given inputs.

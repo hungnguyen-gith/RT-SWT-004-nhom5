@@ -1,3 +1,6 @@
+import numpy as np
+
+
 def __init__(self, *, threshold, branching_factor, is_leaf, n_features, dtype):
         self.threshold = threshold
         self.branching_factor = branching_factor

@@ -1,4 +1,7 @@
-def _get_top_cluster_params(self, X, top):
+import numpy as np
+
+
+def get_top_cluster_params(self, X, top):
         """Method to recieve the cluster mol indices, centroids, and fingerprints of the top user-specified clusters.
         
         Parameters

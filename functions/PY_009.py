@@ -1,3 +1,6 @@
+import numpy as np
+
+
 def prepare_data_BFs(self, fps, initial_mol = 0):
         """Method to prepare the BitFeatures of the largest cluster and the rest of the clusters"""
         if self.first_call:

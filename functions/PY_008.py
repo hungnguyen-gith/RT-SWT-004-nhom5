@@ -1,4 +1,4 @@
-def _get_BFs(self):
+def get_BFs(self):
         """Method to return the BitFeatures of the leaves"""
         if self.first_call:
             raise ValueError('The model has not been fitted yet.')

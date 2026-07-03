@@ -1,3 +1,6 @@
+import plotly.graph_objects as go
+
+
 def mol_relocation_plots(brc_1, brc_2, top_n = 2, title=None):
     
     clusters_1 = brc_1.get_cluster_mol_ids()
