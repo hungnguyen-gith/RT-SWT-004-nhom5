@@ -239,3 +239,10 @@ Thumbs.db
 
 # Large files (thêm nếu data > 100MB)
 # data/raw/
+ 
+# Pynguin virtual environment 
+pynguin_env/ 
+ 
+# Large raw datasets 
+data/raw/*.zip 
+*.zip 

@@ -1,0 +1,233 @@
+Phat hien 24/50 function co undefined name (external dependency):
+
+=== PY_001.py ===
+  functions\PY_001.py:45:22: undefined name 'jt_isim'
+  functions\PY_001.py:45:80: undefined name 'jt_isim'
+  functions\PY_001.py:53:25: undefined name 'jt_isim'
+  functions\PY_001.py:61:25: undefined name 'jt_isim'
+  functions\PY_001.py:75:29: undefined name 'jt_isim'
+  functions\PY_001.py:75:81: undefined name 'jt_isim'
+  functions\PY_001.py:75:124: undefined name 'jt_isim'
+  functions\PY_001.py:79:29: undefined name 'jt_isim'
+  functions\PY_001.py:81:23: undefined name 'jt_isim'
+  functions\PY_001.py:83:23: undefined name 'jt_isim'
+  functions\PY_001.py:83:92: undefined name 'jt_isim'
+  functions\PY_001.py:89:25: undefined name 'jt_isim'
+  functions\PY_001.py:103:29: undefined name 'jt_isim'
+  functions\PY_001.py:103:81: undefined name 'jt_isim'
+  functions\PY_001.py:103:124: undefined name 'jt_isim'
+
+=== PY_002.py ===
+  functions\PY_002.py:21:23: undefined name '_BFSubcluster'
+  functions\PY_002.py:23:23: undefined name '_BFSubcluster'
+  functions\PY_002.py:25:17: undefined name '_BFNode'
+  functions\PY_002.py:39:17: undefined name '_BFNode'
+  functions\PY_002.py:81:44: undefined name 'max_separation'
+
+=== PY_003.py ===
+  functions\PY_003.py:21:13: undefined name 'np'
+  functions\PY_003.py:23:27: undefined name 'np'
+  functions\PY_003.py:25:25: undefined name 'np'
+  functions\PY_003.py:65:52: undefined name '_split_node'
+
+=== PY_004.py ===
+  functions\PY_004.py:55:26: undefined name '_BFNode'
+  functions\PY_004.py:73:32: undefined name '_BFNode'
+  functions\PY_004.py:97:23: undefined name '_BFSubcluster'
+  functions\PY_004.py:101:33: undefined name 'calc_centroid'
+  functions\PY_004.py:105:24: undefined name 'np'
+  functions\PY_004.py:113:52: undefined name '_split_node'
+  functions\PY_004.py:121:30: undefined name '_BFNode'
+  functions\PY_004.py:143:21: undefined name 'np'
+
+=== PY_009.py ===
+  functions\PY_009.py:21:63: undefined name 'np'
+  functions\PY_009.py:29:59: undefined name 'np'
+
+=== PY_010.py ===
+  functions\PY_010.py:23:25: undefined name 'lazyPrune'
+
+=== PY_011.py ===
+  functions\PY_011.py:51:21: undefined name 'np'
+  functions\PY_011.py:55:29: undefined name 'np'
+
+=== PY_012.py ===
+  functions\PY_012.py:55:42: undefined name 'np'
+  functions\PY_012.py:91:38: undefined name 'np'
+  functions\PY_012.py:95:37: undefined name 'calc_centroid'
+
+=== PY_013.py ===
+  functions\PY_013.py:3:25: undefined name 'jt_isim'
+  functions\PY_013.py:17:29: undefined name 'jt_isim'
+  functions\PY_013.py:17:81: undefined name 'jt_isim'
+  functions\PY_013.py:17:124: undefined name 'jt_isim'
+  functions\PY_013.py:17:149: undefined name 'tolerance'
+  functions\PY_013.py:21:29: undefined name 'jt_isim'
+  functions\PY_013.py:23:23: undefined name 'jt_isim'
+  functions\PY_013.py:25:23: undefined name 'jt_isim'
+  functions\PY_013.py:25:92: undefined name 'jt_isim'
+  functions\PY_013.py:25:117: undefined name 'tolerance'
+
+=== PY_017.py ===
+  functions\PY_017.py:63:20: undefined name 'remove_singles'
+  functions\PY_017.py:75:18: undefined name 'np'
+  functions\PY_017.py:79:22: undefined name 'np'
+  functions\PY_017.py:83:13: undefined name 'calculate_centroid'
+  functions\PY_017.py:87:18: undefined name 'calculate_medoid'
+  functions\PY_017.py:103:30: undefined name 'np'
+  functions\PY_017.py:105:23: undefined name 'calculate_centroid'
+  functions\PY_017.py:109:26: undefined name 'calculate_medoid'
+  functions\PY_017.py:113:29: undefined name 'jt_one_to_many'
+  functions\PY_017.py:115:21: undefined name 'np'
+  functions\PY_017.py:117:38: undefined name 'jt_pair'
+  functions\PY_017.py:127:38: undefined name 'jt_pair'
+  functions\PY_017.py:129:29: undefined name 'jt_one_to_many'
+  functions\PY_017.py:131:21: undefined name 'np'
+
+=== PY_018.py ===
+  functions\PY_018.py:39:20: undefined name 'remove_singles'
+  functions\PY_018.py:63:30: undefined name 'np'
+  functions\PY_018.py:65:23: undefined name 'calculate_centroid'
+  functions\PY_018.py:69:26: undefined name 'calculate_medoid'
+  functions\PY_018.py:75:22: undefined name 'np'
+  functions\PY_018.py:75:33: undefined name 'jt_one_to_many'
+  functions\PY_018.py:85:22: undefined name 'np'
+  functions\PY_018.py:85:33: undefined name 'jt_one_to_many'
+  functions\PY_018.py:105:27: undefined name 'jt_pair'
+
+=== PY_019.py ===
+  functions\PY_019.py:41:20: undefined name 'remove_singles'
+  functions\PY_019.py:73:22: undefined name 'np'
+  functions\PY_019.py:75:24: undefined name 'jt_isim'
+  functions\PY_019.py:81:40: undefined name 'calculate_centroid'
+  functions\PY_019.py:85:26: undefined name 'calculate_medoid'
+  functions\PY_019.py:95:23: undefined name 'np'
+  functions\PY_019.py:97:22: undefined name 'np'
+  functions\PY_019.py:99:16: undefined name 'jt_isim'
+
+=== PY_020.py ===
+  functions\PY_020.py:37:14: undefined name 'StandardScaler'
+  functions\PY_020.py:43:12: undefined name 'TSNE'
+  functions\PY_020.py:49:5: undefined name 'plt'
+  functions\PY_020.py:51:15: undefined name 'plt'
+  functions\PY_020.py:53:12: undefined name 'plt'
+  functions\PY_020.py:55:20: undefined name 'np'
+  functions\PY_020.py:57:25: undefined name 'np'
+  functions\PY_020.py:59:5: undefined name 'plt'
+  functions\PY_020.py:61:5: undefined name 'plt'
+  functions\PY_020.py:65:9: undefined name 'plt'
+  functions\PY_020.py:69:9: undefined name 'plt'
+  functions\PY_020.py:71:5: undefined name 'plt'
+
+=== PY_021.py ===
+  functions\PY_021.py:55:11: undefined name 'go'
+  functions\PY_021.py:55:27: undefined name 'go'
+
+=== PY_022.py ===
+  functions\PY_022.py:25:22: undefined name 'jt_isim'
+  functions\PY_022.py:25:30: undefined name 'np'
+
+=== PY_023.py ===
+  functions\PY_023.py:7:12: undefined name 'os'
+  functions\PY_023.py:15:14: undefined name 'pd'
+  functions\PY_023.py:27:9: undefined name 'plt'
+  functions\PY_023.py:33:9: undefined name 'plt'
+  functions\PY_023.py:41:13: undefined name 'plt'
+  functions\PY_023.py:47:9: undefined name 'plt'
+  functions\PY_023.py:55:13: undefined name 'plt'
+  functions\PY_023.py:61:9: undefined name 'plt'
+  functions\PY_023.py:63:9: undefined name 'plt'
+  functions\PY_023.py:65:9: undefined name 'plt'
+  functions\PY_023.py:67:9: undefined name 'plt'
+  functions\PY_023.py:75:9: undefined name 'plt'
+  functions\PY_023.py:77:9: undefined name 'plt'
+  functions\PY_023.py:79:9: undefined name 'plt'
+  functions\PY_023.py:81:9: undefined name 'plt'
+  functions\PY_023.py:81:20: undefined name 'np'
+  functions\PY_023.py:83:9: undefined name 'plt'
+  functions\PY_023.py:87:9: undefined name 'plt'
+  functions\PY_023.py:91:9: undefined name 'plt'
+  functions\PY_023.py:99:13: undefined name 'plt'
+  functions\PY_023.py:103:13: undefined name 'plt'
+  functions\PY_023.py:109:9: undefined name 'plt'
+
+=== PY_025.py ===
+  functions\PY_025.py:19:32: undefined name 'np'
+  functions\PY_025.py:27:28: undefined name 'np'
+
+=== PY_026.py ===
+  functions\PY_026.py:23:13: undefined name 'np'
+  functions\PY_026.py:27:25: undefined name 'np'
+  functions\PY_026.py:55:56: undefined name 'np'
+  functions\PY_026.py:69:52: undefined name '_split_node'
+  functions\PY_026.py:111:56: undefined name 'np'
+
+=== PY_027.py ===
+  functions\PY_027.py:13:24: undefined name 'calc_centroid'
+  functions\PY_027.py:25:21: undefined name 'jt_isim'
+  functions\PY_027.py:25:65: undefined name 'jt_isim'
+
+=== PY_029.py ===
+  functions\PY_029.py:23:26: undefined name '_BFNode'
+  functions\PY_029.py:41:32: undefined name '_BFNode'
+  functions\PY_029.py:63:16: undefined name 'sparse'
+  functions\PY_029.py:69:25: undefined name '_iterate_sparse_X'
+  functions\PY_029.py:77:26: undefined name '_BFSubcluster'
+  functions\PY_029.py:87:52: undefined name '_split_node'
+  functions\PY_029.py:95:30: undefined name '_BFNode'
+  functions\PY_029.py:119:21: undefined name 'np'
+
+=== PY_040.py ===
+  functions\PY_040.py:45:34: undefined name 'huber_loss'
+  functions\PY_040.py:47:35: undefined name 'huber_loss'
+  functions\PY_040.py:51:34: undefined name 'mse_loss'
+  functions\PY_040.py:53:35: undefined name 'mse_loss'
+  functions\PY_040.py:59:26: undefined name 'torch'
+
+=== PY_041.py ===
+  functions\PY_041.py:27:9: undefined name 'share_obs_batch'
+  functions\PY_041.py:27:26: undefined name 'obs_batch'
+  functions\PY_041.py:27:37: undefined name 'rnn_states_batch'
+  functions\PY_041.py:27:55: undefined name 'rnn_states_critic_batch'
+  functions\PY_041.py:27:80: undefined name 'actions_batch'
+  functions\PY_041.py:29:9: undefined name 'value_preds_batch'
+  functions\PY_041.py:29:28: undefined name 'return_batch'
+  functions\PY_041.py:29:42: undefined name 'masks_batch'
+  functions\PY_041.py:29:55: undefined name 'active_masks_batch'
+  functions\PY_041.py:29:75: undefined name 'old_action_log_probs_batch'
+  functions\PY_041.py:39:38: undefined name 'check'
+  functions\PY_041.py:39:44: undefined name 'old_action_log_probs_batch'
+  functions\PY_041.py:41:20: undefined name 'check'
+  functions\PY_041.py:47:29: undefined name 'check'
+  functions\PY_041.py:47:35: undefined name 'value_preds_batch'
+  functions\PY_041.py:49:24: undefined name 'check'
+  functions\PY_041.py:49:30: undefined name 'return_batch'
+  functions\PY_041.py:55:30: undefined name 'check'
+  functions\PY_041.py:55:36: undefined name 'active_masks_batch'
+  functions\PY_041.py:59:24: undefined name 'check'
+  functions\PY_041.py:63:79: undefined name 'share_obs_batch'
+  functions\PY_041.py:65:79: undefined name 'obs_batch'
+  functions\PY_041.py:67:79: undefined name 'rnn_states_batch'
+  functions\PY_041.py:69:79: undefined name 'rnn_states_critic_batch'
+  functions\PY_041.py:71:79: undefined name 'actions_batch'
+  functions\PY_041.py:73:79: undefined name 'masks_batch'
+  functions\PY_041.py:81:23: undefined name 'torch'
+  functions\PY_041.py:81:34: undefined name 'torch'
+  functions\PY_041.py:87:17: undefined name 'torch'
+  functions\PY_041.py:93:36: undefined name 'torch'
+  functions\PY_041.py:93:61: undefined name 'torch'
+  functions\PY_041.py:101:35: undefined name 'torch'
+  functions\PY_041.py:101:60: undefined name 'torch'
+  functions\PY_041.py:121:31: undefined name 'nn'
+  functions\PY_041.py:125:31: undefined name 'get_gard_norm'
+  functions\PY_041.py:147:32: undefined name 'nn'
+  functions\PY_041.py:151:32: undefined name 'get_gard_norm'
+
+=== PY_042.py ===
+  functions\PY_042.py:29:60: undefined name 'np'
+  functions\PY_042.py:31:27: undefined name 'np'
+  functions\PY_042.py:33:26: undefined name 'np'
+
+=== PY_048.py ===
+  functions\PY_048.py:25:29: undefined name 'np'
+
