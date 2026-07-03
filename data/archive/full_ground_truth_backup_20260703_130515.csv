@@ -1,0 +1,1662 @@
+function_id,language,cc_band,cc_value,source_code,annotator_dg,annotator_rw,final_label,notes
+PY-001,python,CC5-8,5,"def set_merge(merge_criterion, tolerance=0.05):
+    """"""
+    Sets merge_accept function for merge_subcluster, based on user specified merge_criteria. 
+
+    Radius: merge subcluster based on comparison to centroid of the cluster
+    Diameter: merge subcluster based on instant Tanimoto similarity of cluster
+    Tolerance: applies tolerance threshold to diameter merge criteria, which will merge subcluster with stricter threshold for newly added molecules
+
+    Parameters:
+    -----------
+    merge_criterion: str(); 
+                        radius, diameter or tolerance
+    tolerance: float; 
+                        sets penalty value for similarity threshold when callng tolerance merge criteria
+
+    Returns:
+    --------
+    merge_accept(): function 
+                        if cluster is accepted to merge, merge the cluster based on the criteria specified
+    """"""
+    if merge_criterion == 'radius':
+        def merge_accept(threshold, new_ls, new_centroid, new_n, old_ls, nom_ls, old_n, nom_n):
+            jt_sim = jt_isim(new_ls + new_centroid, new_n + 1) * (new_n + 1) - jt_isim(new_ls, new_n) * (new_n - 1)
+            return jt_sim >= threshold*2
+    elif merge_criterion == 'diameter':
+        def merge_accept(threshold, new_ls, new_centroid, new_n, old_ls, nom_ls, old_n, nom_n): 
+            jt_radius = jt_isim(new_ls, new_n)
+            return jt_radius >= threshold
+    elif merge_criterion == 'tolerance_tough':
+        def merge_accept(threshold, new_ls, new_centroid, new_n, old_ls, nom_ls, old_n, nom_n):
+            jt_radius = jt_isim(new_ls, new_n)
+            if jt_radius < threshold:
+                return False
+            else:
+                if old_n == 1 and nom_n == 1:
+                    return True
+                elif nom_n == 1:
+                    return (jt_isim(old_ls + nom_ls, old_n + 1) * (old_n + 1) - jt_isim(old_ls, old_n) * (old_n - 1))/2 >= jt_isim(old_ls, old_n) - tolerance and (jt_radius >= threshold)
+                else:
+                    return (jt_isim(old_ls + nom_ls, old_n + nom_n) * (old_n + nom_n) * (old_n + nom_n - 1) 
+                    - jt_isim(old_ls, old_n) * old_n * (old_n - 1)
+                    - jt_isim(nom_ls, nom_n) * nom_n * (nom_n - 1))/(2 * old_n * nom_n) >= jt_isim(old_ls, old_n) - tolerance and (jt_radius >= threshold)
+    elif merge_criterion == 'tolerance':
+        def merge_accept(threshold, new_ls, new_centroid, new_n, old_ls, nom_ls, old_n, nom_n):
+            jt_radius = jt_isim(new_ls, new_n)
+            if jt_radius < threshold:
+                return False
+            else:
+                if old_n == 1 and nom_n == 1:
+                    return True
+                elif nom_n == 1:
+                    return (jt_isim(old_ls + nom_ls, old_n + 1) * (old_n + 1) - jt_isim(old_ls, old_n) * (old_n - 1))/2 >= jt_isim(old_ls, old_n) - tolerance and (jt_radius >= threshold)
+                else:
+                    return True
+    globals()['merge_accept'] = merge_accept",Maintainable,Maintainable,Maintainable,
+PY-002,python,CC5-8,8,"def _split_node(node, threshold, branching_factor, singly):
+    """"""The node has to be split if there is no place for a new subcluster
+    in the node.
+    1. Two empty nodes and two empty subclusters are initialized.
+    2. The pair of distant subclusters are found.
+    3. The properties of the empty subclusters and nodes are updated
+       according to the nearest distance between the subclusters to the
+       pair of distant subclusters.
+    4. The two nodes are set as children to the two subclusters.
+    """"""
+    new_subcluster1 = _BFSubcluster()
+    new_subcluster2 = _BFSubcluster()
+    new_node1 = _BFNode(
+        threshold=threshold,
+        branching_factor=branching_factor,
+        is_leaf=node.is_leaf,
+        n_features=node.n_features,
+        dtype=node.init_centroids_.dtype,
+    )
+    new_node2 = _BFNode(
+        threshold=threshold,
+        branching_factor=branching_factor,
+        is_leaf=node.is_leaf,
+        n_features=node.n_features,
+        dtype=node.init_centroids_.dtype,
+    )
+    new_subcluster1.child_ = new_node1
+    new_subcluster2.child_ = new_node2
+
+    if node.is_leaf:
+        if node.prev_leaf_ is not None:
+            node.prev_leaf_.next_leaf_ = new_node1
+        new_node1.prev_leaf_ = node.prev_leaf_
+        new_node1.next_leaf_ = new_node2
+        new_node2.prev_leaf_ = new_node1
+        new_node2.next_leaf_ = node.next_leaf_
+        if node.next_leaf_ is not None:
+            node.next_leaf_.prev_leaf_ = new_node2  
+    
+    # O(N) implementation of max separation
+    farthest_idx, node1_dist, node2_dist = max_separation(node.centroids_)    
+    # Notice that max_separation is returning similarities and not distances
+    node1_closer = node1_dist > node2_dist
+    # Make sure node1 is closest to itself even if all distances are equal.
+    # This can only happen when all node.centroids_ are duplicates leading to all
+    # distances between centroids being zero.
+    node1_closer[farthest_idx[0]] = True
+
+    for idx, subcluster in enumerate(node.subclusters_):
+        if node1_closer[idx]:
+            new_node1.append_subcluster(subcluster)
+            new_subcluster1.update(subcluster)
+            if not singly:
+                subcluster.parent_ = new_subcluster1
+        else:
+            new_node2.append_subcluster(subcluster)
+            new_subcluster2.update(subcluster)
+            if not singly:
+                subcluster.parent_ = new_subcluster2
+    return new_subcluster1, new_subcluster2",Hard,Hard,Hard,
+PY-005,python,CC5-8,7,"def get_centroids_mol_ids(self):
+        """"""Method to return a dictionary containing the centroids and mol indices of the leaves""""""
+        if self.first_call:
+            raise ValueError('The model has not been fitted yet.')
+        
+        centroids = []
+        mol_ids = []
+        for leaf in self._get_leaves():
+            for subcluster in leaf.subclusters_:
+                centroids.append(subcluster.centroid_)
+                mol_ids.append(subcluster.mol_indices)
+
+        dict_centroids_mol_ids = {'centroids': centroids, 'mol_ids': mol_ids}
+
+        return dict_centroids_mol_ids",Maintainable,Maintainable,Maintainable,
+PY-006,python,CC5-8,6,"def get_centroids(self):
+        """"""Method to return a list of Numpy arrays containing the centroids' fingerprints""""""
+        if self.first_call:
+            raise ValueError('The model has not been fitted yet.')
+        
+        centroids = []
+        for leaf in self._get_leaves():
+            for subcluster in leaf.subclusters_:
+                centroids.append(subcluster.centroid_)
+
+        return centroids",Hard,Hard,Hard,
+PY-007,python,CC5-8,6,"def get_cluster_mol_ids(self):
+        """"""Method to return the indices of molecules in each cluster""""""
+        if self.first_call:
+            raise ValueError('The model has not been fitted yet.')
+        
+        clusters_mol_id = []
+        for leaf in self._get_leaves():
+            for subcluster in leaf.subclusters_:
+                clusters_mol_id.append(subcluster.mol_indices)
+
+        # Sort the clusters by the number of samples in the cluster
+        clusters_mol_id = sorted(clusters_mol_id, key = lambda x: len(x), reverse = True)
+
+        return clusters_mol_id",Maintainable,Maintainable,Maintainable,
+PY-008,python,CC5-8,6,"def _get_BFs(self):
+        """"""Method to return the BitFeatures of the leaves""""""
+        if self.first_call:
+            raise ValueError('The model has not been fitted yet.')
+        
+        BFs = []
+        for leaf in self._get_leaves():
+            for subcluster in leaf.subclusters_:
+                BFs.append(subcluster)
+
+        # Sort the BitFeatures by the number of samples in the cluster
+        BFs = sorted(BFs, key = lambda x: x.n_samples_, reverse = True)
+
+        return BFs",Hard,Hard,Hard,
+PY-009,python,CC5-8,7,"def prepare_data_BFs(self, fps, initial_mol = 0):
+        """"""Method to prepare the BitFeatures of the largest cluster and the rest of the clusters""""""
+        if self.first_call:
+            raise ValueError('The model has not been fitted yet.')
+        
+        BFs = self._get_BFs()
+        big, rest = BFs[0], BFs[1:]
+
+        data = []
+        for BF in rest:
+            data.append([BF.n_samples_, BF.linear_sum_.astype(np.int64), BF.mol_indices])
+
+        bigs = []
+        for mol in big.mol_indices:
+            bigs.append([1, fps[mol - initial_mol].astype(np.int64), [mol]])
+
+        return data, bigs",Maintainable,Maintainable,Maintainable,
+PY-010,python,CC5-8,6,"def _get_prune_indices(self):
+        """"""Method to return the indices of molecules in the largest cluster, specifically to be used in fit_reinsert.""""""
+        largest_cluster = max(
+            (
+                (leaf_idx, cluster_idx, len(cluster.mol_indices))
+                for leaf_idx, leaf in enumerate(self._get_leaves())
+                for cluster_idx, cluster in enumerate(leaf.subclusters_)
+            ),
+            key=lambda x: x[2],  # Sort by the cluster size
+            default=(None, None, 0),  # Default if no clusters are found
+        )
+        prune_indices = lazyPrune(largest_cluster[0], largest_cluster[1], self) 
+        return prune_indices",Hard,Maintainable,Hard,
+PY-013,python,CC5-8,8,"def merge_accept(threshold, new_ls, new_centroid, new_n, old_ls, nom_ls, old_n, nom_n):
+            jt_radius = jt_isim(new_ls, new_n)
+            if jt_radius < threshold:
+                return False
+            else:
+                if old_n == 1 and nom_n == 1:
+                    return True
+                elif nom_n == 1:
+                    return (jt_isim(old_ls + nom_ls, old_n + 1) * (old_n + 1) - jt_isim(old_ls, old_n) * (old_n - 1))/2 >= jt_isim(old_ls, old_n) - tolerance and (jt_radius >= threshold)
+                else:
+                    return (jt_isim(old_ls + nom_ls, old_n + nom_n) * (old_n + nom_n) * (old_n + nom_n - 1) 
+                    - jt_isim(old_ls, old_n) * old_n * (old_n - 1)
+                    - jt_isim(nom_ls, nom_n) * nom_n * (nom_n - 1))/(2 * old_n * nom_n) >= jt_isim(old_ls, old_n) - tolerance and (jt_radius >= threshold)",Maintainable,Maintainable,Maintainable,
+PY-020,python,CC5-8,5,"def tsne_plot(brc, fps, method='', title=None):
+    clusters = brc.get_cluster_mol_ids()
+    sort_clusters = sorted(clusters, key=lambda x: len(x), reverse=True)[:20]
+    # #     # Map each mol ID to its cluster ID
+    n_molecules = sum([len(x) for x in sort_clusters])
+
+
+    cluster_labels = [0] * n_molecules
+
+    fps_clusters = []#[0] * n_molecules
+    cluster_labels = []#[0] * n_molecules
+
+    for cluster_id, cluster in enumerate(sort_clusters):
+        for idx in cluster:
+            fps_clusters.append(fps[idx])
+            cluster_labels.append(int(cluster_id))
+
+
+    scaler = StandardScaler()
+    fps_scaled = scaler.fit_transform(fps_clusters)
+
+    tsne = TSNE(n_components=2, perplexity=30, random_state=42)
+    fps_tsne = tsne.fit_transform(fps_scaled)
+
+    plt.figure(figsize=(8, 6))
+    scatter = plt.scatter(fps_tsne[:, 0], fps_tsne[:, 1], c=cluster_labels, cmap='tab20', alpha=0.9)
+    cbar = plt.colorbar(scatter, label=""Cluster ID"")
+    cbar.set_ticks(np.arange(20))  # Set ticks at the center of each color
+    cbar.set_ticklabels(np.arange(1, 21))  # Set labels from 1 to 20
+    plt.xlabel(""t-SNE Component 1"")
+    plt.ylabel(""t-SNE Component 2"")
+    if title:
+        plt.title(f""t-SNE of Top 20 Largest Clusters for {title}"")
+    else:
+        plt.title(f""t-SNE of Top 20 Largest Clusters for {method[0].upper() + method[1:]}"")
+    plt.show()",Hard,Hard,Hard,
+PY-022,python,CC5-8,7,"def get_plot_metrics(clusters, cai, fps, smiles, top=20):
+    sort_clusters = sort_clusters = sorted(clusters, key=lambda x: len(x), reverse=True)
+    biggest_clusters = sort_clusters[:top]
+    fps_biggest_clusters = [[fps[i] for i in c] for c in biggest_clusters]
+
+    n_mol_bcs = [len(x) for x in biggest_clusters] # #molecules
+
+
+    n_scaff = [cai.scaffold_analysis(c)[0] for c in biggest_clusters]
+    isim_scaff = [cai.scaffold_analysis(c)[1] for c in biggest_clusters]
+
+
+    isim_clusters = [jt_isim(np.sum(fpsc, axis=0), n) for fpsc,n in zip(fps_biggest_clusters, n_mol_bcs)]
+
+    return n_mol_bcs, n_scaff, isim_scaff, isim_clusters",Maintainable,Maintainable,Maintainable,
+PY-023,python,CC5-8,5,"def init_plot(method, title=None):
+    csv_file = f""data/{method}_cluster_metrics.csv""
+
+    if not os.path.exists(csv_file):
+        print(f""Error: CSV file not found at {csv_file}"")
+    else:
+        # Read CSV
+        df = pd.read_csv(csv_file)
+
+        # Ensure Cluster is treated as a categorical variable
+        df[""Cluster""] = df[""Cluster""].astype(str)
+
+        # Create figure and axes
+        plt.figure(figsize=(10, 5))
+
+        # Plot the number of molecules
+        plt.bar(df[""Cluster""], df[""Number of Molecules""], color=""blue"", alpha=1, label=""Molecules"")
+        
+        # Annotate the number of molecules
+        for i, mol in enumerate(df[""Number of Molecules""]):
+            plt.text(i, mol, f""{mol}"", ha=""center"", va=""bottom"", fontsize=10, color=""black"")
+
+        # Plot the number of unique scaffolds
+        plt.bar(df[""Cluster""], df[""Number of Unique Scaffolds""], color=""orange"", alpha=1, label=""Scaffolds"")
+
+        # Annotate the number of unique scaffolds
+        for i, scaf in enumerate(df[""Number of Unique Scaffolds""]):
+            plt.text(i, scaf, f""{scaf}"", ha=""center"", va=""bottom"", fontsize=8, color=""white"")
+
+        # Labels
+        plt.xlabel(""Cluster"", fontsize=12)
+        plt.ylabel(""Count"", fontsize=12)
+        plt.xticks(range(len(df[""Cluster""])))
+        plt.legend(loc=""upper right"")
+     
+     
+        # Plot iSIM
+        plt.twinx()
+        plt.plot(df[""Cluster""], df[""iSIM""], color=""green"", marker=""o"", label=""iSIM"", linewidth=2)
+        plt.ylabel(""iSIM"", fontsize=12)
+        plt.yticks(np.arange(0, 1.1, 0.1))
+        plt.ylim(0, 1)
+
+        plt.tight_layout()
+
+        plt.legend(loc=""upper right"", bbox_to_anchor=(0.80, 1))
+
+        # Title
+        if title:
+            plt.title(f'Top 20 Cluster Metrics for {title}', fontsize=14)
+        else:
+            plt.title(f'Top 20 Cluster Metrics for {method[0].upper() + method[1:]}', fontsize=14)
+
+
+        plt.show()",Hard,Hard,Hard,
+PY-025,python,CC5-8,5,"def __init__(self, *, threshold, branching_factor, is_leaf, n_features, dtype):
+        self.threshold = threshold
+        self.branching_factor = branching_factor
+        self.is_leaf = is_leaf
+        self.n_features = n_features
+
+        # The list of subclusters, centroids and squared norms
+        # to manipulate throughout.
+        self.subclusters_ = []
+        self.init_centroids_ = np.zeros((branching_factor + 1, n_features), dtype=dtype)
+        self.prev_leaf_ = None
+        self.next_leaf_ = None
+
+        self.centroids_sum=np.zeros((1, branching_factor + 1),dtype=""int64"")",Maintainable,Maintainable,Maintainable,
+PY-027,python,CC5-8,5,"def merge_subcluster(self, nominee_cluster, threshold):
+        """"""Check if a cluster is worthy enough to be merged. If
+        yes then merge.
+        """"""
+        new_ls = self.linear_sum_ + nominee_cluster.linear_sum_
+        new_n = self.n_samples_ + nominee_cluster.n_samples_
+        new_centroid = calc_centroid(new_ls, new_n)
+        
+        # TODO: Incorporate other criteria for merging
+        # multiply 2 instead of div
+
+        ls_cent=new_ls+new_centroid
+        jt_radius = jt_isim(ls_cent, new_n + 1) * (new_n + 1) - jt_isim(new_ls, new_n) * (new_n - 1)
+        
+        if jt_radius >= threshold*2:
+            (
+                self.n_samples_,
+                self.linear_sum_,
+                self.centroid_,
+                self.mol_indices,
+            ) = (new_n, new_ls, new_centroid, self.mol_indices + nominee_cluster.mol_indices)
+
+            return True
+        return False",Hard,Hard,Hard,
+PY-028,python,CC5-8,5,"def fit(self, X, y=None):
+        """"""
+        Build a BF Tree for the input data.
+
+        Parameters
+        ----------
+        X : {array-like, sparse matrix} of shape (n_samples, n_features)
+            Input data.
+
+        y : Ignored
+            Not used, present here for API consistency by convention.
+
+        Returns
+        -------
+        self
+            Fitted estimator.
+        """"""
+
+        # TODO: Add input verification
+        return self._fit(X, partial=False)",Maintainable,Maintainable,Maintainable,
+PY-011,python,CC9-12,11,"def _get_top_cluster_params(self, X, top):
+        """"""Method to recieve the cluster mol indices, centroids, and fingerprints of the top user-specified clusters.
+        
+        Parameters
+        ----------
+        X : {array-like, sparse matrix} of shape (n_samples, n_features)
+            Input data.
+        
+        top: int
+            default: 20; specifies number of top largest clusters to reassign
+
+        Returns
+        -------
+        top_clusters: sorted list
+            list of len top; containing the cluster mol ids of given clusters
+
+        centroids: np.array; shape (top, n_features)
+            centroids of the top clusters
+
+        mol_indices: list of indices with the top clusters; len of number of molecules in all top clusters
+
+        data_top_clusters: np.array; shape (n_molecules, n_features)
+            fingerprints of the molecules in the top clusters
+        """"""
+        top_clusters = sorted(self.get_cluster_mol_ids(), key=len, reverse=True)[:top]
+        centroids = np.array([self._calc_centroid(X, c) for c in top_clusters])
+        mol_indices = [i for c in top_clusters for i in c]
+        data_top_clusters = np.array([X[i] for i in mol_indices])
+        assert data_top_clusters.shape[0] == len(mol_indices)
+
+        return top_clusters, centroids, mol_indices, data_top_clusters",Hard,Hard,Hard,
+PY-015,python,CC9-12,9,"def check_cluster_structure(brc):
+    total_mol = 0
+    mol_j_vals = []
+    for index, node in enumerate(brc._get_leaves()):
+        for c in node.subclusters_:
+            mol_j = c.mol_indices
+            total_mol+=c.n_samples_
+            mol_j_vals.append(mol_j)
+            assert c.n_samples_ == len(mol_j), f""Fatal! N_j:{c.n_samples_} and len(mol_j):{len(mol_j)} are incompatible.""
+    print('Check to ensure all N_j values are identical to all len(mol_j) values passed.')
+
+
+    print('Total number of molecules:', total_mol)
+
+    mol_j_vals = [i for cl in mol_j_vals for i in cl]
+
+    unique = []
+    for m in mol_j_vals:
+        if m in unique:
+            print(f'Fatal! Index {m} is repeating!')
+        else:
+            msg = 'There are no repeated indices.'
+        unique.append(m)
+    if msg:
+        print(msg)
+
+    print(f'The range of molecular indices is {min(mol_j_vals)} thru {max(mol_j_vals)}')",Maintainable,Maintainable,Maintainable,
+PY-016,python,CC9-12,9,"def forward(self):
+        print('Running Cluster Analysis: \n')
+        print('Computing clustering metrics...')
+        self.chi_val, self.dbi_val, self.dunn_val = self.clustering_metrics()
+        print(f'Chi:{self.chi_val}')
+        print(f'DBI:{self.dbi_val}')
+        print(f'Dunn:{self.dunn_val}\n')
+
+        print('Analyzing the biggest cluster...')
+        biggest_cluster, fps_biggest_cluster = self.get_biggest_cluster()
+        (self.n_biggest_cluster, self.isim_biggest_cluster, 
+        self.isim_outliers, self.isim_medoids, self.radius_value) = self.biggest_cluster_metrics(biggest_cluster, fps_biggest_cluster)
+        print(f'Size of biggest cluster: {self.n_biggest_cluster}')
+        print(f'iSIM: {self.isim_biggest_cluster}')
+        print(f'iSIM of the outliers: {self.isim_outliers}')
+        print(f'iSIM of the medoids: {self.isim_medoids}')
+        print(f'Radius of biggest_cluster: {self.radius_value} \n')
+
+        print('Looking for unique scaffolds...')
+        self.unique_scaffolds, self.scaffolds_iSIM = self.scaffold_analysis(biggest_cluster)
+        print(f'Number of unique scaffolds: {self.unique_scaffolds}')
+        print(f'iSIM of unique scaffolds: {self.scaffolds_iSIM} \n')
+        
+        print('Getting total clusters...')
+        clusters = self.get_clusters()
+        self.total_clusters = len(clusters)
+        self.larger_clusters = [x for x in [len(cluster) > 10 for cluster in clusters] if x]
+        print(f'Total number of clusters: {self.total_clusters}')
+        print(f'Total number of clusters with more than 10 molecules: {len(self.larger_clusters)} \n')
+        
+        print('Analysis Complete!')
+        
+        return clusters",Hard,Hard,Hard,
+PY-017,python,CC9-12,12,"def chi(clusters, reps = False, rep_type = ""centroid"", curated = False, min_size = 1):
+    """"""Calinski-Harabasz index
+    
+    clusters : list of np.arrays containing the clusters
+    
+    reps : {bool, list} indicates if cluster representatives are given
+    
+    rep_type : type of representative, medoid or centroid
+    
+    curated : bool indicates if singletons have been removed
+    
+    min_size : int size below which clusters will be ignored
+    
+    Note
+    ----
+    Higher values are better
+    
+    """"""
+    # n : total number of points
+    n = 0
+    
+    # k : number of clusters
+    k = len(clusters)
+    
+    # wcss : within-cluster sum of squares
+    wcss = 0
+    
+    # bcss : between-cluster sum of squares
+    bcss = 0
+    
+    if not curated:
+        clusters = remove_singles(clusters, min_size)
+    
+    total_data = []
+    for clust in clusters:
+        for mol in clust:
+            total_data.append(mol)
+    total_data = np.array(total_data)
+    if rep_type == 'centroid':
+        linear_sum = np.sum(total_data, axis=0)
+        n_samples = len(total_data)
+        c = calculate_centroid(linear_sum, n_samples)
+    elif rep_type == 'medoid':
+        medoid = calculate_medoid(total_data)
+        c = total_data[medoid]
+    
+    if not reps:
+        for clust in clusters:
+            n_samples = len(clust)
+            n += n_samples
+            if rep_type == 'centroid':
+                linear_sum = np.sum(clust, axis=0)
+                rep = calculate_centroid(linear_sum, n_samples)
+            elif rep_type == 'medoid':
+                medoid = calculate_medoid(clust)
+                rep = clust[medoid]
+            distances = 1 - jt_one_to_many(rep, clust)
+            wcss += np.dot(distances, distances)
+            bcss += n_samples * (1 - jt_pair(c, rep))**2
+    else:
+        for i, clust in enumerate(clusters):
+            n_samples = len(clust)
+            n += n_samples
+            bcss += n_samples * (1 - jt_pair(c, reps[i]))**2
+            distances = 1 - jt_one_to_many(reps[i], clust)
+            wcss += np.dot(distances, distances)
+    
+    try:
+        value = bcss * (n - k)/(wcss * (k - 1))
+    except:
+        value = 0
+    return value",Maintainable,Hard,Maintainable,
+PY-018,python,CC9-12,11,"def dbi(clusters, reps = False, rep_type = ""centroid"", curated = False, min_size = 1):
+    """"""Davies-Bouldin index
+    
+    clusters : list of np.arrays containing the clusters
+    
+    reps : {bool, list} indicates if cluster representatives are given
+    
+    rep_type : type of representative, medoid or centroid
+    
+    curated : bool indicates if singletons have been removed
+    
+    min_size : int size below which clusters will be ignored
+    
+    Note
+    ----
+    Lower values are better
+    
+    """"""
+    if not curated:
+        clusters = remove_singles(clusters, min_size)
+    
+    n = 0
+    
+    S = []
+    
+    if not reps:
+        reps  = []
+        for clust in clusters:
+            n_samples = len(clust)
+            n += n_samples
+            if rep_type == 'centroid':
+                linear_sum = np.sum(clust, axis=0)
+                rep = calculate_centroid(linear_sum, n_samples)
+            elif rep_type == 'medoid':
+                medoid = calculate_medoid(clust)
+                rep = clust[medoid]
+            reps.append(rep)
+            S.append(np.sum(1 - jt_one_to_many(rep, clust))/n_samples)
+    else:
+        for i, clust in enumerate(clusters):
+            n_samples = len(clust)
+            n += n_samples
+            S.append(np.sum(1 - jt_one_to_many(reps[i], clust))/n_samples)
+    
+    db  = 0
+    
+    for i, clust in enumerate(clusters):
+        d = []
+        for j, other_clust in enumerate(clusters):
+            if i == j:
+                d.append(-1)
+            else:
+                Mij = 1 - jt_pair(reps[i], reps[j])
+                Rij = (S[i] + S[j])/Mij
+                d.append(Rij)
+        db += max(d)
+    
+    try:
+        value = db/n
+    except:
+        value = 0
+
+    return value",Hard,Hard,Hard,
+PY-019,python,CC9-12,9,"def clust_dispersion(clusters, reps = False, rep_type = ""centroid"", curated = False, min_size = 1):
+    """"""Cluster dispersion
+    
+    cd = isim(representatives)/<isim(clusters)>
+    
+    clusters : list of np.arrays containing the clusters
+    
+    reps : {bool, list} indicates if cluster representatives are given
+    
+    rep_type : type of representative, medoid or centroid
+    
+    curated : bool indicates if singletons have been removed
+    
+    min_size : int size below which clusters will be ignored
+    
+    Note
+    ----
+    Lower values are better TODO: DOUBLE CHECK THIS!!!!
+    """"""
+    if not curated:
+        clusters = remove_singles(clusters, min_size)
+    
+    n_clusters = len(clusters)
+    
+    if n_clusters == 1:
+        return -1
+    
+    isim_clusts = 0
+    
+    if not reps:
+        representatives = []
+    else:
+        representatives = reps
+    
+    for clust in clusters:
+        n_samples = len(clust)
+        linear_sum = np.sum(clust, axis=0)
+        isim_clusts += jt_isim(linear_sum, n_samples)
+        if not reps:
+            if rep_type == 'centroid':
+                representatives.append(calculate_centroid(linear_sum, n_samples))
+            elif rep_type == 'medoid':
+                medoid = calculate_medoid(clust)
+                representatives.append(clust[medoid])
+    
+    av_isim_clusts = isim_clusts/n_clusters
+    
+    representatives = np.array(representatives)
+    rep_linear_sum = np.sum(representatives, axis=0)
+    rep_isim = jt_isim(rep_linear_sum, n_clusters)
+
+    try:
+        value =  rep_isim/av_isim_clusts
+    except:
+        value = 0
+    
+    return value",Maintainable,Maintainable,Maintainable,
+PY-021,python,CC9-12,10,"def mol_relocation_plots(brc_1, brc_2, top_n = 2, title=None):
+    
+    clusters_1 = brc_1.get_cluster_mol_ids()
+    clusters_2 = brc_2.get_cluster_mol_ids()
+
+    list_1 = sorted(clusters_1, key=lambda x: len(x), reverse=True)[:top_n]
+    list_2 = sorted(clusters_2, key=lambda x: len(x), reverse=True)[:top_n]
+
+    # Map elements to clusters
+    cluster_map_1 = {elem: f""Cluster 1-{i}"" for i, cluster in enumerate(list_1) for elem in cluster}
+    cluster_map_2 = {elem: f""Cluster 2-{i}"" for i, cluster in enumerate(list_2) for elem in cluster}
+
+    # Track flow of elements between clusters
+    flows = {}
+    for elem in cluster_map_1:
+        source = cluster_map_1[elem]
+        target = cluster_map_2.get(elem, ""Other smaller cluster"")
+        flow_key = (source, target)
+        flows[flow_key] = flows.get(flow_key, 0) + 1
+
+    # Prepare data for Sankey diagram
+    labels = list(set([src for src, _ in flows] + [tgt for _, tgt in flows]))
+    source_indices = [labels.index(src) for src, _ in flows]
+    target_indices = [labels.index(tgt) for _, tgt in flows]
+    values = list(flows.values())
+
+    # Create Sankey diagram
+    fig = go.Figure(data=[go.Sankey(
+        node=dict(
+            pad=15,
+            thickness=20,
+            line=dict(color=""black"", width=0.5),
+            label=labels
+        ),
+        link=dict(
+            source=source_indices,
+            target=target_indices,
+            value=values
+        )
+    )])
+
+    # Update layout
+    fig.update_layout(
+        title_text=title,
+        font_size=10
+    )
+    fig.show()",Hard,Hard,Hard,
+PY-026,python,CC9-12,12,"def insert_bf_subcluster(self, subcluster):
+        """"""Insert a new subcluster into the node.""""""
+        if not self.subclusters_:
+            self.append_subcluster(subcluster)
+            return False
+
+        threshold = self.threshold
+        branching_factor = self.branching_factor
+        # We need to find the closest subcluster among all the
+        # subclusters so that we can insert our new subcluster.
+
+        a = np.dot(self.centroids_, subcluster.centroid_)
+        sim_matrix = self.centroids_sum[0][:len(self.centroids_)] / a # inverse 
+        closest_index = np.argmin(sim_matrix) # inverse
+        closest_subcluster = self.subclusters_[closest_index]
+
+        # If the subcluster has a child, we need a recursive strategy.
+        if closest_subcluster.child_ is not None:
+            split_child = closest_subcluster.child_.insert_bf_subcluster(subcluster)
+
+            if not split_child:
+                # If it is determined that the child need not be split, we
+                # can just update the closest_subcluster
+                closest_subcluster.update(subcluster)
+                temp=self.subclusters_[closest_index].centroid_
+                self.init_centroids_[closest_index] = temp
+                self.centroids_[closest_index] = temp
+                self.centroids_sum[0, closest_index] = np.sum(temp)
+                return False
+
+            # things not too good. we need to redistribute the subclusters in
+            # our child node, and add a new subcluster in the parent
+            # subcluster to accommodate the new child.
+            else:
+                new_subcluster1, new_subcluster2 = _split_node(
+                    closest_subcluster.child_,
+                    threshold,
+                    branching_factor
+                )
+                self.update_split_subclusters(
+                    closest_index, new_subcluster1, new_subcluster2
+                )
+
+                if len(self.subclusters_) > self.branching_factor:
+                    return True
+                return False
+
+        # good to go!
+        else:
+            merged = closest_subcluster.merge_subcluster(subcluster, self.threshold)
+            if merged:
+                temp=closest_subcluster.centroid_
+ 
+                self.centroids_[closest_index]=temp             
+                self.init_centroids_[closest_index] = temp
+                self.centroids_sum[0, closest_index] = np.sum(temp)
+
+                return False
+
+            # not close to any other subclusters, and we still
+            # have space, so add.
+            elif len(self.subclusters_) < self.branching_factor:
+                self.append_subcluster(subcluster)
+                return False
+
+            # We do not have enough space nor is it closer to an
+            # other subcluster. We need to split.
+            else:
+                self.append_subcluster(subcluster)
+                return True",Maintainable,Maintainable,Maintainable,
+PY-029,python,CC9-12,12,"def _fit(self, X, partial):
+        threshold = self.threshold
+        branching_factor = self.branching_factor
+
+        n_samples, n_features = X.shape
+        
+
+        # If partial_fit is called for the first time or fit is called, we
+        # start a new tree.
+        if self.first_call:
+            # The first root is the leaf. Manipulate this object throughout.
+            self.root_ = _BFNode(
+                threshold=threshold,
+                branching_factor=branching_factor,
+                is_leaf=True,
+                n_features=n_features,
+                dtype=X.dtype,
+            )
+    
+            # To enable getting back subclusters.
+            self.dummy_leaf_ = _BFNode(
+                threshold=threshold,
+                branching_factor=branching_factor,
+                is_leaf=True,
+                n_features=n_features,
+                dtype=X.dtype,
+            )
+            self.dummy_leaf_.next_leaf_ = self.root_
+            self.root_.prev_leaf_ = self.dummy_leaf_
+
+        # Cannot vectorize. Enough to convince to use cython.
+        if not sparse.issparse(X):
+            iter_func = iter
+        else:
+            iter_func = _iterate_sparse_X
+
+        for sample in iter_func(X):
+
+            subcluster = _BFSubcluster(linear_sum=sample, mol_indices = [self.index_tracker])
+
+            split = self.root_.insert_bf_subcluster(subcluster)
+
+            if split:
+                new_subcluster1, new_subcluster2 = _split_node(
+                    self.root_, threshold, branching_factor
+                )
+                del self.root_
+                self.root_ = _BFNode(
+                    threshold=threshold,
+                    branching_factor=branching_factor,
+                    is_leaf=False,
+                    n_features=n_features,
+                    dtype=X.dtype,
+                    
+                )
+                self.root_.append_subcluster(new_subcluster1)
+                self.root_.append_subcluster(new_subcluster2)
+            self.index_tracker += 1
+
+        centroids = np.concatenate([leaf.centroids_ for leaf in self._get_leaves()])
+        self.subcluster_centers_ = centroids
+        self._n_features_out = self.subcluster_centers_.shape[0]
+        
+        # TODO: Incorporate global_clustering option
+        #self._global_clustering(X)
+        self.first_call = False
+        return self",Hard,Hard,Hard,
+PY-037,python,CC9-12,9,"def get_cluster_mol_ids(self):
+        """"""Method to return the indices of molecules in each cluster""""""
+        # TODO: create torch version of this function for tensor output
+        if self.first_call:
+            raise ValueError('The model has not been fitted yet.')
+
+        clusters_mol_id = []
+        for leaf in self._get_leaves():
+            for subcluster in leaf.subclusters_:
+                clusters_mol_id.append(subcluster.mol_indices)
+
+        return clusters_mol_id",Maintainable,Maintainable,Maintainable,
+PY-040,python,CC9-12,10,"def cal_value_loss(self, values, value_preds_batch, return_batch, active_masks_batch):
+        """"""
+        Calculate value function loss.
+        :param values: (torch.Tensor) value function predictions.
+        :param value_preds_batch: (torch.Tensor) ""old"" value  predictions from data batch (used for value clip loss)
+        :param return_batch: (torch.Tensor) reward to go returns.
+        :param active_masks_batch: (torch.Tensor) denotes if agent is active or dead at a given timesep.
+
+        :return value_loss: (torch.Tensor) value function loss.
+        """"""
+        if self._use_popart or self._use_valuenorm:
+            value_pred_clipped = value_preds_batch + (values - value_preds_batch).clamp(-self.clip_param,
+                                                                                        self.clip_param)
+            error_clipped = self.value_normalizer.normalize(return_batch) - value_pred_clipped
+            error_original = self.value_normalizer.normalize(return_batch) - values
+        else:
+            value_pred_clipped = value_preds_batch + (values - value_preds_batch).clamp(-self.clip_param,
+                                                                                        self.clip_param)
+            error_clipped = return_batch - value_pred_clipped
+            error_original = return_batch - values
+
+        if self._use_huber_loss:
+            value_loss_clipped = huber_loss(error_clipped, self.huber_delta)
+            value_loss_original = huber_loss(error_original, self.huber_delta)
+        else:
+            value_loss_clipped = mse_loss(error_clipped)
+            value_loss_original = mse_loss(error_original)
+
+        if self._use_clipped_value_loss:
+            value_loss = torch.max(value_loss_original, value_loss_clipped)
+        else:
+            value_loss = value_loss_original
+
+        if self._use_value_active_masks:
+            value_loss = (value_loss * active_masks_batch).sum() / active_masks_batch.sum()
+        else:
+            value_loss = value_loss.mean()
+
+        return value_loss",Hard,Hard,Hard,
+PY-048,python,CC9-12,9,"def act(self, cent_obs, obs, rnn_states_actor, masks, available_actions=None, deterministic=True):
+        """"""
+        Compute actions using the given inputs.
+        :param obs (np.ndarray): local agent inputs to the actor.
+        :param rnn_states_actor: (np.ndarray) if actor is RNN, RNN states for actor.
+        :param masks: (np.ndarray) denotes points at which RNN states should be reset.
+        :param available_actions: (np.ndarray) denotes which actions are available to agent
+                                  (if None, all actions available)
+        :param deterministic: (bool) whether the action should be mode of distribution or should be sampled.
+        """"""
+
+        # this function is just a wrapper for compatibility
+        rnn_states_critic = np.zeros_like(rnn_states_actor)
+        _, actions, _, rnn_states_actor, _ = self.get_actions(cent_obs,
+                                                              obs,
+                                                              rnn_states_actor,
+                                                              rnn_states_critic,
+                                                              masks,
+                                                              available_actions,
+                                                              deterministic)
+
+        return actions, rnn_states_actor",Maintainable,Maintainable,Maintainable,
+PY-003,python,CC13-15,14,"def insert_bf_subcluster(self, subcluster, set_bits, ps, singly):
+        """"""Insert a new subcluster into the node.""""""
+        if not self.subclusters_:
+            self.append_subcluster(subcluster)
+            return False
+
+        threshold = self.threshold
+        branching_factor = self.branching_factor
+        # We need to find the closest subcluster among all the
+        # subclusters so that we can insert our new subcluster.
+        a = np.dot(self.centroids_, subcluster.centroid_)
+        sim_matrix = a / (np.sum(self.centroids_, axis = 1) + set_bits - a)
+        closest_index = np.argmax(sim_matrix)
+        closest_subcluster = self.subclusters_[closest_index]
+
+        # If the subcluster has a child, we need a recursive strategy.
+        if closest_subcluster.child_ is not None:
+            ps = closest_subcluster
+            split_child = closest_subcluster.child_.insert_bf_subcluster(subcluster, set_bits, ps, singly)
+
+            if not split_child:
+                # If it is determined that the child need not be split, we
+                # can just update the closest_subcluster
+                closest_subcluster.update(subcluster)
+                self.init_centroids_[closest_index] = self.subclusters_[closest_index].centroid_
+                self.centroids_[closest_index] = self.subclusters_[closest_index].centroid_
+                return False
+
+            # things not too good. we need to redistribute the subclusters in
+            # our child node, and add a new subcluster in the parent
+            # subcluster to accommodate the new child.
+            else:
+                new_subcluster1, new_subcluster2 = _split_node(
+                    closest_subcluster.child_,
+                    threshold,
+                    branching_factor,
+                    singly
+                )
+                self.update_split_subclusters(
+                    closest_subcluster, new_subcluster1, new_subcluster2, singly
+                )
+
+                if len(self.subclusters_) > self.branching_factor:
+                    return True
+                return False
+
+        # good to go!
+        else:
+            merged = closest_subcluster.merge_subcluster(subcluster, self.threshold)
+            if merged:
+                self.centroids_[closest_index] = closest_subcluster.centroid_
+                self.init_centroids_[closest_index] = closest_subcluster.centroid_
+                if not singly:
+                    closest_subcluster.parent_ = ps
+                return False
+
+            # not close to any other subclusters, and we still
+            # have space, so add.
+            elif len(self.subclusters_) < self.branching_factor:
+                self.append_subcluster(subcluster)
+                if not singly:
+                    closest_subcluster.parent_ = ps
+                return False
+
+            # We do not have enough space nor is it closer to an
+            # other subcluster. We need to split.
+            else:
+                self.append_subcluster(subcluster)
+                return True",Hard,Hard,Hard,
+PY-004,python,CC13-15,14,"def fit_BFs(self, X):
+        """"""
+        Method to fit a BitBirch model with the given BitFeatyres.
+
+        Parameters:
+        -----------
+        X : list of BitFeatures
+
+        Returns:
+        --------
+        self
+        """"""
+
+        # Check that the input is a list of BitFeatures
+        if type(X) != list or len(X[0]) != 3:
+            raise ValueError('The input must be a list of BitFeatures')
+        
+        threshold = self.threshold
+        branching_factor = self.branching_factor
+
+        n_features = len(X[0][1])
+        d_type = X[0][1].dtype
+
+        # If partial_fit is called for the first time or fit is called, we
+        # start a new tree.
+        if self.first_call:
+            # The first root is the leaf. Manipulate this object throughout.
+            self.root_ = _BFNode(
+                threshold=threshold,
+                branching_factor=branching_factor,
+                is_leaf=True,
+                n_features=n_features,
+                dtype=d_type,
+            )
+    
+            # To enable getting back subclusters.
+            self.dummy_leaf_ = _BFNode(
+                threshold=threshold,
+                branching_factor=branching_factor,
+                is_leaf=True,
+                n_features=n_features,
+                dtype=d_type,
+            )
+            self.dummy_leaf_.next_leaf_ = self.root_
+            self.root_.prev_leaf_ = self.dummy_leaf_
+
+        for sample in iter(X):
+
+            cluster = _BFSubcluster()
+            cluster.n_samples_, cluster.linear_sum_, cluster.mol_indices = sample[0], sample[1], sample[2]
+            cluster.centroid_ = calc_centroid(cluster.linear_sum_, cluster.n_samples_)
+
+            set_bits = np.sum(cluster.centroid_)
+            split = self.root_.insert_bf_subcluster(cluster, set_bits, cluster.parent_, True)
+
+            if split:
+                new_subcluster1, new_subcluster2 = _split_node(
+                    self.root_, threshold, branching_factor, True
+                )
+                del self.root_
+                self.root_ = _BFNode(
+                    threshold=threshold,
+                    branching_factor=branching_factor,
+                    is_leaf=False,
+                    n_features=n_features,
+                    dtype=d_type,
+                )
+                self.root_.append_subcluster(new_subcluster1)
+                self.root_.append_subcluster(new_subcluster2)
+            self.index_tracker += 1
+
+        centroids = np.concatenate([leaf.centroids_ for leaf in self._get_leaves()])
+        self.subcluster_centers_ = centroids
+        self._n_features_out = self.subcluster_centers_.shape[0]
+        
+        self.first_call = False
+        return self",Maintainable,Maintainable,Maintainable,
+PY-012,python,CC13-15,15,"def reassign(self, X, top=20, quick=False):
+        """"""
+        Reassign molecules across the user-specified (default 20) top largest clusters in the tree based on the tanimoto similarity matrix. 
+
+        Parameters
+        ----------
+        X : {array-like, sparse matrix} of shape (n_samples, n_features)
+            Input data.
+
+        top: int
+            default: 20; specifies number of top largest clusters to reassign
+
+        quick: boolean
+            default: False; if quick specifed, the whole tree will not be return, but a dictionary of top cluster data will be returned
+
+        Return
+        ------
+        quick return: dict
+            dictionary sorted by largest to smallest newly reassigned top clusters
+
+        self
+            Fitted estimator.
+        """"""
+        top_clusters, centroids, mol_indices, data_top_clusters = self._get_top_cluster_params(X, top)
+        row_max = self._get_sim_matrix(data_top_clusters, centroids)
+
+
+        final_clusters = {i: [] for i in np.unique(row_max)}
+        for mol, cluster_idx in zip(mol_indices, row_max):
+            final_clusters[cluster_idx].append(mol)
+        
+        if quick:
+            return dict(sorted(final_clusters.items(), key=lambda item: len(item[1]), reverse=True))    #Return dict sorted by largest to smallest newly reassigned top clusters
+        
+        else:
+            sub_clusters = [sc for leaf in self._get_leaves() for sc in leaf.subclusters_]
+            assert len(sub_clusters) == len(self.get_cluster_mol_ids())
+           
+            top_sub_clusters = sorted(sub_clusters, key=lambda c: c.n_samples_, reverse=True)[:top]
+   
+            for sc, tc in zip(top_sub_clusters, top_clusters):
+                assert sc.n_samples_ == len(tc)
+
+            for cluster, c_ids in zip(top_sub_clusters, final_clusters.values()):
+                cluster.n_samples_ = len(c_ids)
+                cluster.linear_sum = np.sum(X[c_ids], axis=0)
+                cluster.mol_indices = c_ids
+                cluster.centroid_ = calc_centroid(cluster.linear_sum_, cluster.n_samples_)
+        return self",Hard,Hard,Hard,
+PY-041,python,CC13-15,13,"def ppo_update(self, sample, update_actor=True):
+        """"""
+        Update actor and critic networks.
+        :param sample: (Tuple) contains data batch with which to update networks.
+        :update_actor: (bool) whether to update actor network.
+
+        :return value_loss: (torch.Tensor) value function loss.
+        :return critic_grad_norm: (torch.Tensor) gradient norm from critic update.
+        ;return policy_loss: (torch.Tensor) actor(policy) loss value.
+        :return dist_entropy: (torch.Tensor) action entropies.
+        :return actor_grad_norm: (torch.Tensor) gradient norm from actor update.
+        :return imp_weights: (torch.Tensor) importance sampling weights.
+        """"""
+        share_obs_batch, obs_batch, rnn_states_batch, rnn_states_critic_batch, actions_batch, \
+        value_preds_batch, return_batch, masks_batch, active_masks_batch, old_action_log_probs_batch, \
+        adv_targ, available_actions_batch, factor_batch = sample
+
+
+
+        old_action_log_probs_batch = check(old_action_log_probs_batch).to(**self.tpdv)
+        adv_targ = check(adv_targ).to(**self.tpdv)
+
+
+        value_preds_batch = check(value_preds_batch).to(**self.tpdv)
+        return_batch = check(return_batch).to(**self.tpdv)
+
+
+        active_masks_batch = check(active_masks_batch).to(**self.tpdv)
+
+        factor_batch = check(factor_batch).to(**self.tpdv)
+        # Reshape to do in a single forward pass for all steps
+        values, action_log_probs, dist_entropy = self.policy.evaluate_actions(share_obs_batch,
+                                                                              obs_batch, 
+                                                                              rnn_states_batch, 
+                                                                              rnn_states_critic_batch, 
+                                                                              actions_batch, 
+                                                                              masks_batch, 
+                                                                              available_actions_batch,
+                                                                              active_masks_batch)
+        # actor update
+        imp_weights = torch.prod(torch.exp(action_log_probs - old_action_log_probs_batch),dim=-1,keepdim=True)
+
+        surr1 = imp_weights * adv_targ
+        surr2 = torch.clamp(imp_weights, 1.0 - self.clip_param, 1.0 + self.clip_param) * adv_targ
+
+        if self._use_policy_active_masks:
+            policy_action_loss = (-torch.sum(factor_batch * torch.min(surr1, surr2),
+                                             dim=-1,
+                                             keepdim=True) * active_masks_batch).sum() / active_masks_batch.sum()
+        else:
+            policy_action_loss = -torch.sum(factor_batch * torch.min(surr1, surr2), dim=-1, keepdim=True).mean()
+
+        policy_loss = policy_action_loss
+
+        self.policy.actor_optimizer.zero_grad()
+
+        if update_actor:
+            (policy_loss - dist_entropy * self.entropy_coef).backward()
+
+        if self._use_max_grad_norm:
+            actor_grad_norm = nn.utils.clip_grad_norm_(self.policy.actor.parameters(), self.max_grad_norm)
+        else:
+            actor_grad_norm = get_gard_norm(self.policy.actor.parameters())
+
+        self.policy.actor_optimizer.step()
+
+        value_loss = self.cal_value_loss(values, value_preds_batch, return_batch, active_masks_batch)
+
+        self.policy.critic_optimizer.zero_grad()
+
+        (value_loss * self.value_loss_coef).backward()
+
+        if self._use_max_grad_norm:
+            critic_grad_norm = nn.utils.clip_grad_norm_(self.policy.critic.parameters(), self.max_grad_norm)
+        else:
+            critic_grad_norm = get_gard_norm(self.policy.critic.parameters())
+
+        self.policy.critic_optimizer.step()
+
+        return value_loss, critic_grad_norm, policy_loss, dist_entropy, actor_grad_norm, imp_weights",Maintainable,Maintainable,Maintainable,
+PY-042,python,CC13-15,15,"def train(self, buffer, update_actor=True):
+        """"""
+        Perform a training update using minibatch GD.
+        :param buffer: (SharedReplayBuffer) buffer containing training data.
+        :param update_actor: (bool) whether to update actor network.
+
+        :return train_info: (dict) contains information regarding training update (e.g. loss, grad norms, etc).
+        """"""
+        if self._use_popart:
+            advantages = buffer.returns[:-1] - self.value_normalizer.denormalize(buffer.value_preds[:-1])
+        else:
+            advantages = buffer.returns[:-1] - buffer.value_preds[:-1]
+
+        advantages_copy = advantages.copy()
+        advantages_copy[buffer.active_masks[:-1] == 0.0] = np.nan
+        mean_advantages = np.nanmean(advantages_copy)
+        std_advantages = np.nanstd(advantages_copy)
+        advantages = (advantages - mean_advantages) / (std_advantages + 1e-5)
+
+        train_info = {}
+
+        train_info['value_loss'] = 0
+        train_info['policy_loss'] = 0
+        train_info['dist_entropy'] = 0
+        train_info['actor_grad_norm'] = 0
+        train_info['critic_grad_norm'] = 0
+        train_info['ratio'] = 0
+
+        for _ in range(self.ppo_epoch):
+            if self._use_recurrent_policy:
+                data_generator = buffer.recurrent_generator(advantages, self.num_mini_batch, self.data_chunk_length)
+            elif self._use_naive_recurrent:
+                data_generator = buffer.naive_recurrent_generator(advantages, self.num_mini_batch)
+            else:
+                data_generator = buffer.feed_forward_generator(advantages, self.num_mini_batch)
+
+            for sample in data_generator:
+                value_loss, critic_grad_norm, policy_loss, dist_entropy, actor_grad_norm, imp_weights = self.ppo_update(sample, update_actor=update_actor)
+
+                train_info['value_loss'] += value_loss.item()
+                train_info['policy_loss'] += policy_loss.item()
+                train_info['dist_entropy'] += dist_entropy.item()
+                train_info['actor_grad_norm'] += actor_grad_norm
+                train_info['critic_grad_norm'] += critic_grad_norm
+                train_info['ratio'] += imp_weights.mean()
+
+        num_updates = self.ppo_epoch * self.num_mini_batch
+
+        for k in train_info.keys():
+            train_info[k] /= num_updates
+ 
+        return train_info",Hard,Hard,Hard,
+PY-043,python,CC13-15,15,"def get_actions(self, cent_obs, obs, rnn_states_actor, rnn_states_critic, masks, available_actions=None,
+                    deterministic=False):
+        """"""
+        Compute actions and value function predictions for the given inputs.
+        :param cent_obs (np.ndarray): centralized input to the critic.
+        :param obs (np.ndarray): local agent inputs to the actor.
+        :param rnn_states_actor: (np.ndarray) if actor is RNN, RNN states for actor.
+        :param rnn_states_critic: (np.ndarray) if critic is RNN, RNN states for critic.
+        :param masks: (np.ndarray) denotes points at which RNN states should be reset.
+        :param available_actions: (np.ndarray) denotes which actions are available to agent
+                                  (if None, all actions available)
+        :param deterministic: (bool) whether the action should be mode of distribution or should be sampled.
+
+        :return values: (torch.Tensor) value function predictions.
+        :return actions: (torch.Tensor) actions to take.
+        :return action_log_probs: (torch.Tensor) log probabilities of chosen actions.
+        :return rnn_states_actor: (torch.Tensor) updated actor network RNN states.
+        :return rnn_states_critic: (torch.Tensor) updated critic network RNN states.
+        """"""
+        actions, action_log_probs, rnn_states_actor = self.actor(obs,
+                                                                 rnn_states_actor,
+                                                                 masks,
+                                                                 available_actions,
+                                                                 deterministic)
+
+        values, rnn_states_critic = self.critic(cent_obs, rnn_states_critic, masks)
+        return values, actions, action_log_probs, rnn_states_actor, rnn_states_critic",Maintainable,Maintainable,Maintainable,
+PY-049,python,CC5-8,5,"def merge_intervals(intervals):
+    if not intervals:
+        return []
+    intervals = sorted(intervals, key=lambda x: x[0])
+    merged = [intervals[0]]
+    for current in intervals[1:]:
+        last = merged[-1]
+        if current[0] <= last[1]:
+            if current[1] > last[1]:
+                merged[-1] = (last[0], current[1])
+        else:
+            merged.append(current)
+    return merged",Hard,Hard,Hard,
+PY-050,python,CC5-8,6,"def schedule_tasks(tasks, max_workers=4):
+    queue = sorted(tasks, key=lambda t: t.get(""priority"", 0), reverse=True)
+    assignments = {i: [] for i in range(max_workers)}
+    loads = [0] * max_workers
+    for task in queue:
+        duration = task.get(""duration"", 1)
+        target = 0
+        for w in range(max_workers):
+            if loads[w] < loads[target]:
+                target = w
+        if duration <= 0:
+            continue
+        assignments[target].append(task)
+        loads[target] += duration
+    return assignments",Maintainable,Maintainable,Maintainable,
+PY-051,python,CC9-12,9,"def compute_discount(total, customer_tier, coupon=None, is_first_order=False):
+    rate = 0.0
+    if customer_tier == ""gold"":
+        rate = 0.15
+    elif customer_tier == ""silver"":
+        rate = 0.10
+    elif customer_tier == ""bronze"":
+        rate = 0.05
+    if coupon:
+        if coupon.startswith(""SALE""):
+            rate += 0.05
+        elif coupon.startswith(""VIP""):
+            rate += 0.10
+    if is_first_order:
+        rate += 0.05
+    if rate > 0.5:
+        rate = 0.5
+    return total * (1 - rate)",Hard,Hard,Hard,
+PY-052,python,CC9-12,11,"def validate_password(password, min_length=8, require_digit=True, require_upper=True, require_special=False):
+    if len(password) < min_length:
+        return False
+    has_digit = any(c.isdigit() for c in password)
+    has_upper = any(c.isupper() for c in password)
+    has_special = any(not c.isalnum() for c in password)
+    if require_digit and not has_digit:
+        return False
+    if require_upper and not has_upper:
+        return False
+    if require_special and not has_special:
+        return False
+    return True",Maintainable,Maintainable,Maintainable,
+PY-053,python,CC9-12,9,"def calculate_shipping(weight_kg, distance_km, express=False, fragile=False, country=""domestic""):
+    base = 5.0
+    if weight_kg > 1:
+        base += (weight_kg - 1) * 1.5
+    if distance_km > 100:
+        base += (distance_km - 100) * 0.02
+    elif distance_km > 50:
+        base += (distance_km - 50) * 0.01
+    if express:
+        base *= 1.5
+    if fragile:
+        base += 3.0
+    if country == ""international"":
+        base *= 2.0
+    elif country == ""regional"":
+        base *= 1.2
+    if base > 200:
+        base = 200.0
+    return round(base, 2)",Hard,Hard,Hard,
+PY-054,python,CC9-12,11,"def build_query_string(params, sort_keys=True, exclude_none=True, encode_spaces=True):
+    items = list(params.items())
+    if sort_keys:
+        items.sort(key=lambda kv: kv[0])
+    parts = []
+    for key, value in items:
+        if value is None:
+            if exclude_none:
+                continue
+            value = """"
+        if isinstance(value, bool):
+            value = ""true"" if value else ""false""
+        elif isinstance(value, (list, tuple)):
+            for v in value:
+                encoded_v = str(v).replace("" "", ""+"") if encode_spaces else str(v)
+                parts.append(f""{key}={encoded_v}"")
+            continue
+        encoded_value = str(value).replace("" "", ""+"") if encode_spaces else str(value)
+        parts.append(f""{key}={encoded_value}"")
+    return ""&"".join(parts)",Maintainable,Maintainable,Maintainable,
+PY-055,python,CC9-12,12,"def normalize_path(path, base=None, strict=False, allow_empty=False):
+    if path is None:
+        if allow_empty:
+            return """"
+        raise ValueError(""path is required"")
+    if base:
+        if not path.startswith(""/""):
+            path = base.rstrip(""/"") + ""/"" + path
+    parts = path.split(""/"")
+    cleaned = []
+    for part in parts:
+        if part == """" or part == ""."":
+            continue
+        if part == "".."":
+            if cleaned and strict:
+                cleaned.pop()
+            elif not strict:
+                cleaned.append(part)
+        else:
+            cleaned.append(part)
+    return ""/"" + ""/"".join(cleaned)",Hard,Hard,Hard,
+PY-056,python,CC13-15,14,"def classify_shipment_priority(weight_kg, distance_km, value_usd, is_perishable, is_fragile, customer_tier):
+    score = 0
+    if weight_kg > 20:
+        score += 1
+    elif weight_kg > 10:
+        score += 2
+    else:
+        score += 3
+    if distance_km > 500:
+        score -= 2
+    elif distance_km > 200:
+        score -= 1
+    if value_usd > 1000:
+        score += 3
+    elif value_usd > 100:
+        score += 1
+    if is_perishable:
+        score += 4
+    if is_fragile:
+        score += 1
+    if customer_tier == ""gold"":
+        score += 2
+    elif customer_tier == ""silver"":
+        score += 1
+    if score >= 8:
+        return ""urgent""
+    elif score >= 5:
+        return ""high""
+    elif score >= 2:
+        return ""normal""
+    else:
+        return ""low""",Maintainable,Maintainable,Maintainable,
+PY-057,python,CC13-15,14,"def parse_csv_line(line, delimiter="","", quote_char='""', trim_whitespace=False, skip_empty=False):
+    fields = []
+    current = """"
+    in_quotes = False
+    i = 0
+    while i < len(line):
+        ch = line[i]
+        if in_quotes:
+            if ch == quote_char:
+                if i + 1 < len(line) and line[i + 1] == quote_char:
+                    current += quote_char
+                    i += 1
+                else:
+                    in_quotes = False
+            else:
+                current += ch
+        else:
+            if ch == quote_char:
+                in_quotes = True
+            elif ch == delimiter:
+                if trim_whitespace:
+                    current = current.strip()
+                if not (skip_empty and current == """"):
+                    fields.append(current)
+                current = """"
+            else:
+                current += ch
+        i += 1
+    if trim_whitespace:
+        current = current.strip()
+    if not (skip_empty and current == """"):
+        fields.append(current)
+    return fields",Hard,Hard,Hard,
+PY-058,python,CC13-15,15,"def compute_loan_eligibility(income, credit_score, existing_debt, employment_years, age, has_collateral):
+    if age < 18 or age > 70:
+        return False
+    if credit_score < 500:
+        return False
+    debt_ratio = existing_debt / income if income > 0 else 1.0
+    if debt_ratio > 0.5:
+        if not has_collateral:
+            return False
+        elif credit_score < 650:
+            return False
+    if employment_years < 1:
+        if credit_score < 700:
+            return False
+    elif employment_years < 3:
+        if credit_score < 600:
+            return False
+    if credit_score >= 750:
+        return True
+    elif credit_score >= 650:
+        return debt_ratio <= 0.4
+    else:
+        return debt_ratio <= 0.2 and has_collateral",Maintainable,Maintainable,Maintainable,
+PY-059,python,CC13-15,14,"def tokenize_simple_expression(text):
+    tokens = []
+    i = 0
+    n = len(text)
+    while i < n:
+        ch = text[i]
+        if ch.isspace():
+            i += 1
+            continue
+        elif ch.isdigit():
+            j = i
+            while j < n and (text[j].isdigit() or text[j] == "".""):
+                j += 1
+            tokens.append((""NUMBER"", text[i:j]))
+            i = j
+        elif ch.isalpha():
+            j = i
+            while j < n and text[j].isalnum():
+                j += 1
+            tokens.append((""IDENT"", text[i:j]))
+            i = j
+        elif ch in ""+-*/()"":
+            tokens.append((""OP"", ch))
+            i += 1
+        elif ch == ""."" and i + 1 < n and text[i + 1].isdigit():
+            tokens.append((""NUMBER"", "".""))
+            i += 1
+        else:
+            raise ValueError(f""Unexpected character: {ch}"")
+    return tokens",Hard,Hard,Hard,
+PY-060,python,CC13-15,13,"def grade_exam(score, attendance_pct, has_late_penalty, extra_credit, is_makeup_exam, has_disability_accommodation):
+    adjusted = score
+    if has_late_penalty:
+        if has_disability_accommodation:
+            adjusted -= 2
+        else:
+            adjusted -= 5
+    adjusted += extra_credit
+    if attendance_pct < 50:
+        if has_disability_accommodation:
+            adjusted -= 5
+        else:
+            adjusted -= 10
+    elif attendance_pct < 75:
+        adjusted -= 5
+    if is_makeup_exam:
+        adjusted = min(adjusted, 80)
+    if adjusted >= 90:
+        grade = ""A""
+    elif adjusted >= 80:
+        grade = ""B""
+    elif adjusted >= 70:
+        grade = ""C""
+    elif adjusted >= 60:
+        grade = ""D""
+    else:
+        grade = ""F""
+    if grade == ""F"" and attendance_pct >= 90:
+        grade = ""D""
+    return grade",Maintainable,Maintainable,Maintainable,
+PY-061,python,CC13-15,13,"def resolve_route(start, end, traffic_level, vehicle_type, has_toll_pass, is_night):
+    base_time = abs(end - start)
+    if vehicle_type == ""truck"":
+        base_time *= 1.5
+    elif vehicle_type == ""motorbike"":
+        base_time *= 0.8
+    if traffic_level == ""heavy"":
+        base_time *= 2.0
+    elif traffic_level == ""moderate"":
+        base_time *= 1.3
+    elif traffic_level == ""light"":
+        base_time *= 1.0
+    if is_night:
+        if vehicle_type == ""truck"":
+            base_time *= 0.9
+        else:
+            base_time *= 0.95
+    toll_cost = 0
+    if not has_toll_pass:
+        if vehicle_type == ""truck"":
+            toll_cost = 50
+        elif vehicle_type == ""car"":
+            toll_cost = 20
+        else:
+            toll_cost = 5
+    if base_time > 120:
+        route_label = ""long""
+    elif base_time > 60:
+        route_label = ""medium""
+    else:
+        route_label = ""short""
+    return {""time"": base_time, ""toll"": toll_cost, ""label"": route_label}",Hard,Hard,Hard,
+PY-062,python,CC13-15,15,"def validate_form_submission(fields, required_fields, max_lengths, custom_validators):
+    errors = []
+    for field in required_fields:
+        if field not in fields or not fields[field]:
+            errors.append(f""{field} is required"")
+    for field, value in fields.items():
+        if field in max_lengths:
+            if value and len(value) > max_lengths[field]:
+                errors.append(f""{field} exceeds max length"")
+        if field in custom_validators:
+            validator = custom_validators[field]
+            if value:
+                if not validator(value):
+                    errors.append(f""{field} failed validation"")
+    if ""email"" in fields and fields[""email""]:
+        if ""@"" not in fields[""email""]:
+            errors.append(""invalid email"")
+        elif fields[""email""].count(""@"") > 1:
+            errors.append(""invalid email"")
+    return errors",Maintainable,Maintainable,Maintainable,
+PY-063,python,CC13-15,13,"def compute_tax_bracket(income, filing_status, deductions, dependents, is_senior):
+    taxable = income - deductions
+    if dependents > 0:
+        taxable -= dependents * 2000
+    if is_senior:
+        taxable -= 1500
+    if taxable < 0:
+        taxable = 0
+    if filing_status == ""single"":
+        if taxable <= 10000:
+            rate = 0.10
+        elif taxable <= 40000:
+            rate = 0.15
+        elif taxable <= 90000:
+            rate = 0.25
+        else:
+            rate = 0.35
+    elif filing_status == ""married"":
+        if taxable <= 20000:
+            rate = 0.10
+        elif taxable <= 80000:
+            rate = 0.15
+        else:
+            rate = 0.25
+    else:
+        rate = 0.20
+    tax = taxable * rate
+    if is_senior and tax > 0:
+        tax *= 0.95
+    return round(tax, 2)",Hard,Hard,Hard,
+PY-064,python,CC13-15,13,"def detect_anomaly(readings, baseline, tolerance_pct, min_consecutive, allow_negative_spike, smoothing=False, reset_on_recovery=True):
+    anomalies = []
+    consecutive = 0
+    prev_value = None
+    for i, value in enumerate(readings):
+        if smoothing and prev_value is not None:
+            value = (value + prev_value) / 2
+        deviation = (value - baseline) / baseline if baseline != 0 else 0
+        is_high = deviation > tolerance_pct
+        is_low = deviation < -tolerance_pct and not allow_negative_spike
+        if is_high or is_low:
+            consecutive += 1
+            if consecutive >= min_consecutive:
+                if is_high:
+                    anomalies.append((i, ""high""))
+                elif is_low:
+                    anomalies.append((i, ""low""))
+        else:
+            if reset_on_recovery:
+                consecutive = 0
+            elif consecutive > 0:
+                consecutive -= 1
+        prev_value = value
+    return anomalies",Maintainable,Maintainable,Maintainable,
+PY-065,python,CC13-15,14,"def assign_seat(passenger, available_seats, preferences, is_vip, group_size):
+    if is_vip:
+        for seat in available_seats:
+            if seat.get(""class"") == ""first"":
+                return seat
+    if group_size > 1:
+        for seat in available_seats:
+            if seat.get(""adjacent_free"", 0) >= group_size - 1:
+                return seat
+    if preferences.get(""window""):
+        for seat in available_seats:
+            if seat.get(""type"") == ""window"":
+                return seat
+    elif preferences.get(""aisle""):
+        for seat in available_seats:
+            if seat.get(""type"") == ""aisle"":
+                return seat
+    return available_seats[0] if available_seats else None",Hard,Hard,Hard,
