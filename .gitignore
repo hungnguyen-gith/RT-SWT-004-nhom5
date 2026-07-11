@@ -239,7 +239,3 @@ Thumbs.db
 
 # Large files (thêm nếu data > 100MB)
 # data/raw/
-
-
-#Ignore vscode AI rules
-.github\instructions\codacy.instructions.md
