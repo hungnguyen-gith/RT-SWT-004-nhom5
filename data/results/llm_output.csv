@@ -1,0 +1,2744 @@
+function_id,file,generated_test,status
+PY-005,functions\PY_005.py,"```python
+import pytest
+
+class TestTakeFunction:
+    def setup_method(self):
+        # Mocking the RDD and context for testing
+        class MockRDD:
+            def __init__(self, data):
+                self.data = data
+                self.partitions = [data[i:i + 1] for i in range(len(data))]
+
+            def getNumPartitions(self):
+                return len(self.partitions)
+
+            def context(self):
+                return self
+
+            def runJob(self, rdd, func, partitions):
+                results = []
+                for p in partitions:
+                    results.extend(func(iter(self.partitions[p])))
+                return results
+
+        self.mock_rdd = MockRDD([2, 3, 4, 5, 6])
+
+    def test_normal_case(self):
+        assert self.mock_rdd.take(2) == [2, 3]
+        assert self.mock_rdd.take(5) == [2, 3, 4, 5, 6]
+
+    def test_boundary_case(self):
+        assert self.mock_rdd.take(0) == []
+        assert self.mock_rdd.take(1) == [2]
+        assert self.mock_rdd.take(6) == [2, 3, 4, 5, 6]
+
+    def test_edge_case(self):
+        empty_rdd = MockRDD([])
+        assert empty_rdd.take(2) == []
+        assert empty_rdd.take(0) == []
+        
+        single_element_rdd = MockRDD([1])
+        assert single_element_rdd.take(1) == [1]
+        assert single_element_rdd.take(2) == [1]
+```",success
+PY-006,functions\PY_006.py,"```python
+import pytest
+
+class TestSetExecutorEnv:
+    def test_set_single_key_value(self):
+        obj = YourClass()  # Replace with your actual class name
+        obj.set = lambda k, v: (k, v)  # Mocking the set method
+        result = obj.setExecutorEnv(key='TEST_KEY', value='TEST_VALUE')
+        assert result == obj
+        assert obj.set(""spark.executorEnv.TEST_KEY"", 'TEST_VALUE') == (""spark.executorEnv.TEST_KEY"", 'TEST_VALUE')
+
+    def test_set_multiple_pairs(self):
+        obj = YourClass()  # Replace with your actual class name
+        obj.set = lambda k, v: (k, v)  # Mocking the set method
+        pairs = [('KEY1', 'VALUE1'), ('KEY2', 'VALUE2')]
+        result = obj.setExecutorEnv(pairs=pairs)
+        assert result == obj
+        assert obj.set(""spark.executorEnv.KEY1"", 'VALUE1') == (""spark.executorEnv.KEY1"", 'VALUE1')
+        assert obj.set(""spark.executorEnv.KEY2"", 'VALUE2') == (""spark.executorEnv.KEY2"", 'VALUE2')
+
+    def test_set_both_key_value_and_pairs(self):
+        obj = YourClass()  # Replace with your actual class name
+        with pytest.raises(Exception, match=""Either pass one key-value pair or a list of pairs""):
+            obj.setExecutorEnv(key='TEST_KEY', value='TEST_VALUE', pairs=[('KEY1', 'VALUE1')])
+
+    def test_set_neither_key_value_nor_pairs(self):
+        obj = YourClass()  # Replace with your actual class name
+        with pytest.raises(Exception, match=""Either pass one key-value pair or a list of pairs""):
+            obj.setExecutorEnv()
+
+    def test_set_empty_pairs(self):
+        obj = YourClass()  # Replace with your actual class name
+        obj.set = lambda k, v: (k, v)  # Mocking the set method
+        result = obj.setExecutorEnv(pairs=[])
+        assert result == obj
+
+    def test_set_key_with_none_value(self):
+        obj = YourClass()  # Replace with your actual class name
+        obj.set = lambda k, v: (k, v)  # Mocking the set method
+        result = obj.setExecutorEnv(key='TEST_KEY', value=None)
+        assert result == obj
+        assert obj.set(""spark.executorEnv.TEST_KEY"", None) == (""spark.executorEnv.TEST_KEY"", None)
+
+    def test_set_key_with_empty_string_value(self):
+        obj = YourClass()  # Replace with your actual class name
+        obj.set = lambda k, v: (k, v)  # Mocking the set method
+        result = obj.setExecutorEnv(key='TEST_KEY', value='')
+        assert result == obj
+        assert obj.set(""spark.executorEnv.TEST_KEY"", '') == (""spark.executorEnv.TEST_KEY"", '')
+```",success
+PY-007,functions\PY_007.py,"```python
+import pytest
+
+class TestGetFunction:
+    def setup_method(self):
+        self.obj = YourClass()  # Replace with the actual class name
+        self.obj._jconf = None
+        self.obj._conf = {}
+
+    def test_get_existing_key(self):
+        self.obj._conf = {'key1': 'value1'}
+        assert self.obj.get('key1') == 'value1'
+
+    def test_get_non_existing_key_with_default(self):
+        self.obj._conf = {'key1': 'value1'}
+        assert self.obj.get('key2', 'default') == 'default'
+
+    def test_get_non_existing_key_without_default(self):
+        self.obj._conf = {'key1': 'value1'}
+        assert self.obj.get('key2') is None
+
+    def test_get_with_none_default_value(self):
+        self.obj._conf = {'key1': 'value1'}
+        assert self.obj.get('key1', None) == 'value1'
+
+    def test_get_with_none_key(self):
+        self.obj._conf = {'key1': 'value1'}
+        assert self.obj.get(None, 'default') == 'default'
+
+    def test_get_empty_conf(self):
+        self.obj._conf = {}
+        assert self.obj.get('key1') is None
+
+    def test_get_jconf_with_existing_key(self):
+        self.obj._jconf = MockJConf({'key1': 'value1'})  # Mocking _jconf
+        assert self.obj.get('key1') == 'value1'
+
+    def test_get_jconf_with_non_existing_key(self):
+        self.obj._jconf = MockJConf({'key1': 'value1'})
+        assert self.obj.get('key2', 'default') == 'default'
+
+    def test_get_jconf_with_none_default_value(self):
+        self.obj._jconf = MockJConf({'key1': 'value1'})
+        assert self.obj.get('key1', None) == 'value1'
+
+    def test_get_jconf_empty(self):
+        self.obj._jconf = MockJConf({})
+        assert self.obj.get('key1') is None
+
+class MockJConf:
+    def __init__(self, conf):
+        self.conf = conf
+
+    def contains(self, key):
+        return key in self.conf
+
+    def get(self, key, default=None):
+        return self.conf.get(key, default)
+```",success
+PY-008,functions\PY_008.py,"```python
+import pytest
+
+# Sample classes for testing
+class Parent:
+    def method_one(self):
+        """"""This is method one in Parent.""""""
+        pass
+
+    def method_two(self):
+        """"""This is method two in Parent.""""""
+        pass
+
+class Child(Parent):
+    def method_one(self):
+        """"""This is method one in Child.""""""
+        pass
+
+    def method_two(self):
+        pass  # No docstring
+
+class AnotherChild(Parent):
+    def method_three(self):
+        pass  # No docstring
+
+@inherit_doc
+class TestChild(Child):
+    pass
+
+@inherit_doc
+class TestAnotherChild(AnotherChild):
+    pass
+
+def test_inherit_doc_child_method_one():
+    assert TestChild.method_one.__doc__ == ""This is method one in Child.""
+
+def test_inherit_doc_child_method_two():
+    assert TestChild.method_two.__doc__ == ""This is method two in Parent.""
+
+def test_inherit_doc_another_child_method_three():
+    assert TestAnotherChild.method_three.__doc__ is None
+
+def test_inherit_doc_no_methods():
+    class EmptyClass:
+        pass
+
+    @inherit_doc
+    class TestEmptyClass(EmptyClass):
+        pass
+
+    assert TestEmptyClass.__doc__ is None
+
+def test_inherit_doc_private_method():
+    class PrivateParent:
+        def _private_method(self):
+            """"""This is a private method in Parent.""""""
+            pass
+
+    @inherit_doc
+    class TestPrivateChild(PrivateParent):
+        def _private_method(self):
+            pass  # No docstring
+
+    assert TestPrivateChild._private_method.__doc__ is None
+
+def test_inherit_doc_multiple_parents():
+    class ParentA:
+        def method_a(self):
+            """"""This is method A in ParentA.""""""
+            pass
+
+    class ParentB:
+        def method_a(self):
+            """"""This is method A in ParentB.""""""
+            pass
+
+    class MultiChild(ParentA, ParentB):
+        def method_a(self):
+            pass  # No docstring
+
+    @inherit_doc
+    class TestMultiChild(MultiChild):
+        pass
+
+    assert TestMultiChild.method_a.__doc__ == ""This is method A in ParentA.""
+```",success
+PY-009,functions\PY_009.py,"```python
+import pytest
+
+class TestLoadFunction:
+    def test_load_with_valid_path(self):
+        result = load(path=""valid/path/to/data"", format=""parquet"")
+        assert result is not None
+
+    def test_load_with_valid_path_and_schema(self):
+        result = load(path=""valid/path/to/data"", format=""parquet"", schema=""col0 INT, col1 DOUBLE"")
+        assert result is not None
+
+    def test_load_with_default_format(self):
+        result = load(path=""valid/path/to/data"")
+        assert result is not None
+
+    def test_load_with_empty_path(self):
+        with pytest.raises(ValueError, match=""If the path is provided for stream, it needs to be a non-empty string. List of paths are not supported.""):
+            load(path="""", format=""parquet"")
+
+    def test_load_with_non_string_path(self):
+        with pytest.raises(ValueError, match=""If the path is provided for stream, it needs to be a non-empty string. List of paths are not supported.""):
+            load(path=123, format=""parquet"")
+
+    def test_load_with_none_path(self):
+        result = load()
+        assert result is not None
+
+    def test_load_with_whitespace_path(self):
+        with pytest.raises(ValueError, match=""If the path is provided for stream, it needs to be a non-empty string. List of paths are not supported.""):
+            load(path=""   "", format=""parquet"")
+
+    def test_load_with_large_path(self):
+        long_path = ""a"" * 1000  # Assuming this is a valid path length
+        result = load(path=long_path, format=""parquet"")
+        assert result is not None
+
+    def test_load_with_special_characters_in_path(self):
+        result = load(path=""valid/path/with/special@chars!"", format=""parquet"")
+        assert result is not None
+
+    def test_load_with_invalid_format(self):
+        with pytest.raises(ValueError):
+            load(path=""valid/path/to/data"", format=""invalid_format"")
+```",success
+PY-020,functions\PY_020.py,"```python
+import pytest
+import numpy as np
+from unittest.mock import MagicMock
+from your_module import tsne_plot  # Replace 'your_module' with the actual module name
+
+class MockBRC:
+    def get_cluster_mol_ids(self):
+        return [[0, 1], [2, 3], [4, 5], [6, 7], [8, 9]]  # Normal case
+
+def test_tsne_plot_normal_case():
+    brc = MockBRC()
+    fps = np.random.rand(10, 5)  # 10 molecules with 5 features each
+    tsne_plot(brc, fps, method='test', title='Test Title')  # Should run without errors
+
+def test_tsne_plot_empty_clusters():
+    brc = MockBRC()
+    brc.get_cluster_mol_ids = MagicMock(return_value=[])  # No clusters
+    fps = np.random.rand(0, 5)  # No features
+    tsne_plot(brc, fps, method='test', title='Test Title')  # Should run without errors
+
+def test_tsne_plot_single_cluster():
+    brc = MockBRC()
+    brc.get_cluster_mol_ids = MagicMock(return_value=[[0]])  # Single cluster
+    fps = np.random.rand(1, 5)  # One molecule with 5 features
+    tsne_plot(brc, fps, method='test', title='Test Title')  # Should run without errors
+
+def test_tsne_plot_large_fps():
+    brc = MockBRC()
+    fps = np.random.rand(1000, 5)  # Large number of molecules
+    tsne_plot(brc, fps, method='test', title='Test Title')  # Should run without errors
+
+def test_tsne_plot_boundary_case():
+    brc = MockBRC()
+    fps = np.random.rand(20, 5)  # Exactly 20 molecules
+    tsne_plot(brc, fps, method='test', title='Test Title')  # Should run without errors
+
+def test_tsne_plot_no_fps():
+    brc = MockBRC()
+    fps = np.array([]).reshape(0, 5)  # No features
+    tsne_plot(brc, fps, method='test', title='Test Title')  # Should run without errors
+
+def test_tsne_plot_invalid_fps_shape():
+    brc = MockBRC()
+    fps = np.random.rand(10, 0)  # Invalid shape
+    with pytest.raises(ValueError):
+        tsne_plot(brc, fps, method='test', title='Test Title')  # Should raise ValueError
+
+def test_tsne_plot_title_none():
+    brc = MockBRC()
+    fps = np.random.rand(10, 5)  # Normal case
+    tsne_plot(brc, fps, method='test', title=None)  # Should run without errors
+```",success
+PY-023,functions\PY_023.py,"```python
+import pytest
+import os
+import pandas as pd
+from unittest.mock import patch, MagicMock
+import matplotlib.pyplot as plt
+
+# Assuming the function init_plot is in a module named 'plotting'
+from plotting import init_plot
+
+@pytest.fixture
+def mock_csv_data():
+    return pd.DataFrame({
+        ""Cluster"": [""A"", ""B"", ""C""],
+        ""Number of Molecules"": [10, 20, 30],
+        ""Number of Unique Scaffolds"": [5, 10, 15],
+        ""iSIM"": [0.1, 0.5, 0.9]
+    })
+
+def test_init_plot_normal_case(mock_csv_data):
+    with patch('os.path.exists', return_value=True), \
+         patch('pandas.read_csv', return_value=mock_csv_data), \
+         patch('matplotlib.pyplot.show') as mock_show:
+        init_plot('test', 'Test Title')
+        mock_show.assert_called_once()
+
+def test_init_plot_no_csv_file(mock_csv_data):
+    with patch('os.path.exists', return_value=False) as mock_exists:
+        with patch('builtins.print') as mock_print:
+            init_plot('test')
+            mock_print.assert_called_once_with(""Error: CSV file not found at data/test_cluster_metrics.csv"")
+
+def test_init_plot_empty_dataframe():
+    empty_df = pd.DataFrame(columns=[""Cluster"", ""Number of Molecules"", ""Number of Unique Scaffolds"", ""iSIM""])
+    with patch('os.path.exists', return_value=True), \
+         patch('pandas.read_csv', return_value=empty_df), \
+         patch('matplotlib.pyplot.show') as mock_show:
+        init_plot('test')
+        mock_show.assert_called_once()
+
+def test_init_plot_boundary_case():
+    boundary_df = pd.DataFrame({
+        ""Cluster"": [""A""],
+        ""Number of Molecules"": [0],
+        ""Number of Unique Scaffolds"": [0],
+        ""iSIM"": [0.0]
+    })
+    with patch('os.path.exists', return_value=True), \
+         patch('pandas.read_csv', return_value=boundary_df), \
+         patch('matplotlib.pyplot.show') as mock_show:
+        init_plot('test')
+        mock_show.assert_called_once()
+
+def test_init_plot_edge_case_title():
+    edge_case_df = pd.DataFrame({
+        ""Cluster"": [""A"", ""B""],
+        ""Number of Molecules"": [1, 1],
+        ""Number of Unique Scaffolds"": [1, 1],
+        ""iSIM"": [0.0, 1.0]
+    })
+    with patch('os.path.exists', return_value=True), \
+         patch('pandas.read_csv', return_value=edge_case_df), \
+         patch('matplotlib.pyplot.show') as mock_show:
+        init_plot('test', '')
+        mock_show.assert_called_once()
+```",success
+PY-025,functions\PY_025.py,"```python
+import pytest
+
+class MockLayer:
+    def __init__(self):
+        self.layer_norm = MockLayerNorm()
+        self.o_net = MockWeight()
+        self.qkv_net = MockWeight()
+        self.r_net = MockWeight()
+        self.pos_ff = MockPosFF()
+
+class MockLayerNorm:
+    def __init__(self):
+        self.weight = ""layer_norm_weight""
+        self.bias = ""layer_norm_bias""
+
+class MockWeight:
+    def __init__(self):
+        self.weight = ""weight_value""
+
+class MockPosFF:
+    def __init__(self):
+        self.layer_norm = MockLayerNorm()
+        self.CoreNet = [MockWeight(), MockWeight(), MockWeight(), MockWeight()]
+
+class MockModel:
+    def __init__(self):
+        self.transformer = True
+        self.crit = MockCrit()
+        self.word_emb = MockWordEmb()
+        self.layers = [MockLayer() for _ in range(2)]
+        self.r_r_bias = ""r_r_bias_value""
+        self.r_w_bias = ""r_w_bias_value""
+
+class MockCrit:
+    def __init__(self):
+        self.cluster_weight = ""cluster_weight_value""
+        self.cluster_bias = ""cluster_bias_value""
+        self.out_layers = [MockWeight() for _ in range(2)]
+        self.out_projs = [MockWeight() for _ in range(2)]
+
+class MockWordEmb:
+    def __init__(self):
+        self.emb_layers = [MockWeight() for _ in range(2)]
+        self.emb_projs = [MockWeight() for _ in range(2)]
+
+class MockConfig:
+    def __init__(self, tie_weight=True, tie_projs=[True, False], untie_r=False):
+        self.tie_weight = tie_weight
+        self.tie_projs = tie_projs
+        self.untie_r = untie_r
+
+def test_build_tf_to_pytorch_map_normal():
+    model = MockModel()
+    config = MockConfig()
+    result = build_tf_to_pytorch_map(model, config)
+    assert isinstance(result, dict)
+    assert len(result) > 0
+    assert result[""transformer/adaptive_softmax/cutoff_0/cluster_W""] == ""cluster_weight_value""
+    assert result[""transformer/adaptive_softmax/cutoff_0/cluster_b""] == ""cluster_bias_value""
+
+def test_build_tf_to_pytorch_map_boundary():
+    model = MockModel()
+    config = MockConfig(tie_projs=[True])
+    result = build_tf_to_pytorch_map(model, config)
+    assert ""transformer/adaptive_softmax/cutoff_0/b"" in result
+    assert ""transformer/adaptive_softmax/cutoff_1/b"" not in result
+
+def test_build_tf_to_pytorch_map_edge_case_no_layers():
+    model = MockModel()
+    model.layers = []
+    config = MockConfig()
+    result = build_tf_to_pytorch_map(model, config)
+    assert ""transformer/r_r_bias"" in result
+    assert result[""transformer/r_r_bias""] == [""r_r_bias_value""]
+
+def test_build_tf_to_pytorch_map_edge_case_untie_r():
+    model = MockModel()
+    config = MockConfig(untie_r=True)
+    result = build_tf_to_pytorch_map(model, config)
+    assert ""transformer/r_r_bias"" in result
+    assert result[""transformer/r_r_bias""] == [""r_r_bias_value"", ""r_r_bias_value""]
+
+def test_build_tf_to_pytorch_map_not_implemented():
+    model = MockModel()
+    config = MockConfig(tie_weight=False)
+    with pytest.raises(NotImplementedError):
+        build_tf_to_pytorch_map(model, config)
+```",success
+PY-028,functions\PY_028.py,"```python
+import pytest
+from unittest.mock import MagicMock
+
+class TestTieWeights:
+    def setup_method(self):
+        self.obj = MagicMock()
+        self.obj.config.tie_weight = True
+        self.obj.config.tie_projs = [True, False]
+        self.obj.config.div_val = 1
+        self.obj.config.d_model = 512
+        self.obj.config.d_embed = 256
+        self.obj.sample_softmax = 1
+        self.obj.transformer.word_emb.weight = MagicMock()
+        self.obj.crit.out_layers = [MagicMock(), MagicMock()]
+        self.obj.crit.out_projs = [MagicMock(), MagicMock()]
+
+    def test_tie_weights_sampled_softmax(self):
+        self.obj.tie_weights()
+        assert self.obj.out_layer.weight == self.obj.transformer.word_emb.weight
+
+    def test_tie_weights_adaptive_softmax(self):
+        self.obj.sample_softmax = 0
+        self.obj.tie_weights()
+        for i in range(len(self.obj.crit.out_layers)):
+            assert self.obj.crit.out_layers[i].weight == self.obj.transformer.word_emb.emb_layers[i].weight
+
+    def test_tie_projs_div_val_one(self):
+        self.obj.sample_softmax = 0
+        self.obj.tie_weights()
+        for i, tie_proj in enumerate(self.obj.config.tie_projs):
+            if tie_proj:
+                assert self.obj.crit.out_projs[i] == self.obj.transformer.word_emb.emb_projs[0]
+
+    def test_tie_projs_div_val_not_one(self):
+        self.obj.config.div_val = 2
+        self.obj.sample_softmax = 0
+        self.obj.tie_weights()
+        for i, tie_proj in enumerate(self.obj.config.tie_projs):
+            if tie_proj:
+                assert self.obj.crit.out_projs[i] == self.obj.transformer.word_emb.emb_projs[i]
+
+    def test_no_tie_weight(self):
+        self.obj.config.tie_weight = False
+        self.obj.tie_weights()
+        assert self.obj.out_layer.weight != self.obj.transformer.word_emb.weight
+
+    def test_no_tie_projs(self):
+        self.obj.config.tie_projs = [False, False]
+        self.obj.tie_weights()
+        assert self.obj.crit.out_projs == [MagicMock(), MagicMock()]
+
+    def test_edge_case_empty_layers(self):
+        self.obj.crit.out_layers = []
+        self.obj.tie_weights()
+        assert self.obj.crit.out_layers == []
+
+    def test_edge_case_empty_projs(self):
+        self.obj.crit.out_projs = []
+        self.obj.tie_weights()
+        assert self.obj.crit.out_projs == []
+```",success
+PY-011,functions\PY_011.py,"```python
+import pytest
+import numpy as np
+
+class MockCluster:
+    def __init__(self, cluster_mol_ids):
+        self.cluster_mol_ids = cluster_mol_ids
+
+    def get_cluster_mol_ids(self):
+        return self.cluster_mol_ids
+
+    def _calc_centroid(self, X, cluster):
+        return np.mean(X[cluster], axis=0)
+
+def test_get_top_cluster_params_normal():
+    cluster_mol_ids = [[0, 1], [2, 3, 4], [5]]
+    mock = MockCluster(cluster_mol_ids)
+    X = np.array([[1, 2], [2, 3], [3, 4], [4, 5], [5, 6], [6, 7]])
+    top = 2
+
+    top_clusters, centroids, mol_indices, data_top_clusters = mock.get_top_cluster_params(X, top)
+
+    assert top_clusters == [[2, 3, 4], [0, 1]]
+    assert np.array_equal(centroids, np.array([[3, 4], [1.5, 2.5]]))
+    assert mol_indices == [2, 3, 4, 0, 1]
+    assert data_top_clusters.shape == (5, 2)
+
+def test_get_top_cluster_params_boundary():
+    cluster_mol_ids = [[0], [1], [2]]
+    mock = MockCluster(cluster_mol_ids)
+    X = np.array([[1, 2], [2, 3], [3, 4]])
+    top = 3
+
+    top_clusters, centroids, mol_indices, data_top_clusters = mock.get_top_cluster_params(X, top)
+
+    assert top_clusters == [[0], [1], [2]]
+    assert np.array_equal(centroids, np.array([[1, 2], [2, 3], [3, 4]]))
+    assert mol_indices == [0, 1, 2]
+    assert data_top_clusters.shape == (3, 2)
+
+def test_get_top_cluster_params_edge_case_empty():
+    cluster_mol_ids = []
+    mock = MockCluster(cluster_mol_ids)
+    X = np.array([])
+    top = 0
+
+    top_clusters, centroids, mol_indices, data_top_clusters = mock.get_top_cluster_params(X, top)
+
+    assert top_clusters == []
+    assert centroids.shape == (0, 0)
+    assert mol_indices == []
+    assert data_top_clusters.shape == (0, 0)
+
+def test_get_top_cluster_params_edge_case_single_cluster():
+    cluster_mol_ids = [[0, 1, 2]]
+    mock = MockCluster(cluster_mol_ids)
+    X = np.array([[1, 2], [2, 3], [3, 4]])
+    top = 1
+
+    top_clusters, centroids, mol_indices, data_top_clusters = mock.get_top_cluster_params(X, top)
+
+    assert top_clusters == [[0, 1, 2]]
+    assert np.array_equal(centroids, np.array([[2, 3]]))
+    assert mol_indices == [0, 1, 2]
+    assert data_top_clusters.shape == (3, 2)
+
+def test_get_top_cluster_params_top_greater_than_clusters():
+    cluster_mol_ids = [[0, 1], [2, 3]]
+    mock = MockCluster(cluster_mol_ids)
+    X = np.array([[1, 2], [2, 3], [3, 4], [4, 5]])
+    top = 5
+
+    top_clusters, centroids, mol_indices, data_top_clusters = mock.get_top_cluster_params(X, top)
+
+    assert top_clusters == [[2, 3], [0, 1]]
+    assert np.array_equal(centroids, np.array([[3, 4], [1.5, 2.5]]))
+    assert mol_indices == [2, 3, 0, 1]
+    assert data_top_clusters.shape == (4, 2)
+```",success
+PY-015,functions\PY_015.py,"```python
+import pytest
+
+class MockSubcluster:
+    def __init__(self, mol_indices, n_samples_):
+        self.mol_indices = mol_indices
+        self.n_samples_ = n_samples_
+
+class MockNode:
+    def __init__(self, subclusters_):
+        self.subclusters_ = subclusters_
+
+class MockBRC:
+    def __init__(self, leaves):
+        self.leaves = leaves
+
+    def _get_leaves(self):
+        return self.leaves
+
+def test_check_cluster_structure_normal():
+    subcluster1 = MockSubcluster([1, 2, 3], 3)
+    subcluster2 = MockSubcluster([4, 5], 2)
+    node1 = MockNode([subcluster1])
+    node2 = MockNode([subcluster2])
+    brc = MockBRC([node1, node2])
+    
+    check_cluster_structure(brc)
+
+def test_check_cluster_structure_boundary():
+    subcluster = MockSubcluster([], 0)
+    node = MockNode([subcluster])
+    brc = MockBRC([node])
+    
+    check_cluster_structure(brc)
+
+def test_check_cluster_structure_edge_case_repeated_indices():
+    subcluster1 = MockSubcluster([1, 2, 3], 3)
+    subcluster2 = MockSubcluster([2, 4], 2)  # Repeated index '2'
+    node1 = MockNode([subcluster1])
+    node2 = MockNode([subcluster2])
+    brc = MockBRC([node1, node2])
+    
+    with pytest.raises(AssertionError):
+        check_cluster_structure(brc)
+
+def test_check_cluster_structure_edge_case_empty():
+    brc = MockBRC([])
+    
+    check_cluster_structure(brc)
+
+def test_check_cluster_structure_edge_case_single_node():
+    subcluster = MockSubcluster([1], 1)
+    node = MockNode([subcluster])
+    brc = MockBRC([node])
+    
+    check_cluster_structure(brc)
+```",success
+PY-016,functions\PY_016.py,"```python
+import pytest
+import numpy as np
+
+class TestReindexIndexer:
+    
+    @pytest.fixture
+    def setup(self):
+        # Mock object to simulate the behavior of the class containing reindex_indexer
+        class MockClass:
+            def __init__(self, axes, blocks):
+                self.axes = axes
+                self.blocks = blocks
+                self.ndim = len(axes)
+
+            def copy(self, deep=True):
+                return MockClass(self.axes.copy(), self.blocks.copy())
+
+            def _consolidate_inplace(self):
+                pass
+
+            def _slice_take_blocks_ax0(self, indexer, fill_tuple):
+                return [blk.take_nd(indexer, axis=0, fill_tuple=fill_tuple) for blk in self.blocks]
+
+            def __class__(self, new_blocks, new_axes):
+                return MockClass(new_axes, new_blocks)
+
+        return MockClass([np.array([0, 1, 2]), np.array([0, 1])], [np.array([[1], [2], [3]]), np.array([[4], [5]])])
+
+    def test_reindex_indexer_normal(self, setup):
+        new_axis = np.array([0, 1, 2, 3])
+        indexer = np.array([0, 1, -1])
+        axis = 0
+        result = setup.reindex_indexer(new_axis, indexer, axis)
+        assert result.axes[axis].tolist() == new_axis.tolist()
+
+    def test_reindex_indexer_with_fill_value(self, setup):
+        new_axis = np.array([0, 1, 2, 3])
+        indexer = np.array([0, 1, -1])
+        axis = 0
+        fill_value = 0
+        result = setup.reindex_indexer(new_axis, indexer, axis, fill_value=fill_value)
+        assert result.blocks[0].tolist() == [[1], [2], [0]]
+
+    def test_reindex_indexer_allow_dups(self, setup):
+        new_axis = np.array([0, 1, 2, 3])
+        indexer = np.array([0, 1, 1])
+        axis = 0
+        allow_dups = True
+        result = setup.reindex_indexer(new_axis, indexer, axis, allow_dups=allow_dups)
+        assert result.axes[axis].tolist() == new_axis.tolist()
+
+    def test_reindex_indexer_no_indexer(self, setup):
+        new_axis = np.array([0, 1, 2, 3])
+        indexer = None
+        axis = 0
+        result = setup.reindex_indexer(new_axis, indexer, axis)
+        assert result.axes[axis].tolist() == new_axis.tolist()
+
+    def test_reindex_indexer_invalid_axis(self, setup):
+        new_axis = np.array([0, 1, 2, 3])
+        indexer = np.array([0, 1, -1])
+        axis = 2  # Invalid axis
+        with pytest.raises(IndexError):
+            setup.reindex_indexer(new_axis, indexer, axis)
+
+    def test_reindex_indexer_empty_indexer(self, setup):
+        new_axis = np.array([0, 1, 2])
+        indexer = np.array([])
+        axis = 0
+        result = setup.reindex_indexer(new_axis, indexer, axis)
+        assert result.blocks[0].tolist() == []
+
+    def test_reindex_indexer_boundary(self, setup):
+        new_axis = np.array([0, 1])
+        indexer = np.array([0, 1])
+        axis = 0
+        result = setup.reindex_indexer(new_axis, indexer, axis)
+        assert result.axes[axis].tolist() == new_axis.tolist()
+
+    def test_reindex_indexer_edge_case(self, setup):
+        new_axis = np.array([0])
+        indexer = np.array([0])
+        axis = 0
+        result = setup.reindex_indexer(new_axis, indexer, axis)
+        assert result.axes[axis].tolist() == new_axis.tolist()
+```",success
+PY-021,functions\PY_021.py,"```python
+import pytest
+from unittest.mock import MagicMock
+from your_module import mol_relocation_plots  # Replace 'your_module' with the actual module name
+
+def test_mol_relocation_plots_normal_case():
+    brc_1 = MagicMock()
+    brc_2 = MagicMock()
+    brc_1.get_cluster_mol_ids.return_value = [['A', 'B'], ['C', 'D']]
+    brc_2.get_cluster_mol_ids.return_value = [['A', 'E'], ['F', 'G']]
+    
+    mol_relocation_plots(brc_1, brc_2, top_n=2, title=""Test Plot"")
+    # Check if the function runs without errors
+
+def test_mol_relocation_plots_empty_clusters():
+    brc_1 = MagicMock()
+    brc_2 = MagicMock()
+    brc_1.get_cluster_mol_ids.return_value = []
+    brc_2.get_cluster_mol_ids.return_value = []
+    
+    mol_relocation_plots(brc_1, brc_2, top_n=2, title=""Empty Clusters"")
+    # Check if the function runs without errors
+
+def test_mol_relocation_plots_single_element_clusters():
+    brc_1 = MagicMock()
+    brc_2 = MagicMock()
+    brc_1.get_cluster_mol_ids.return_value = [['A']]
+    brc_2.get_cluster_mol_ids.return_value = [['A']]
+    
+    mol_relocation_plots(brc_1, brc_2, top_n=1, title=""Single Element Clusters"")
+    # Check if the function runs without errors
+
+def test_mol_relocation_plots_top_n_greater_than_clusters():
+    brc_1 = MagicMock()
+    brc_2 = MagicMock()
+    brc_1.get_cluster_mol_ids.return_value = [['A'], ['B']]
+    brc_2.get_cluster_mol_ids.return_value = [['A'], ['C']]
+    
+    mol_relocation_plots(brc_1, brc_2, top_n=5, title=""Top N Greater Than Clusters"")
+    # Check if the function runs without errors
+
+def test_mol_relocation_plots_no_common_elements():
+    brc_1 = MagicMock()
+    brc_2 = MagicMock()
+    brc_1.get_cluster_mol_ids.return_value = [['A', 'B']]
+    brc_2.get_cluster_mol_ids.return_value = [['C', 'D']]
+    
+    mol_relocation_plots(brc_1, brc_2, top_n=2, title=""No Common Elements"")
+    # Check if the function runs without errors
+
+def test_mol_relocation_plots_title_none():
+    brc_1 = MagicMock()
+    brc_2 = MagicMock()
+    brc_1.get_cluster_mol_ids.return_value = [['A', 'B'], ['C']]
+    brc_2.get_cluster_mol_ids.return_value = [['A', 'D'], ['E']]
+    
+    mol_relocation_plots(brc_1, brc_2, top_n=2, title=None)
+    # Check if the function runs without errors
+```",success
+PY-037,functions\PY_037.py,"```python
+import pytest
+import numpy as np
+
+class TestUpdateFunction:
+    @pytest.fixture
+    def setup(self):
+        class MockModel:
+            def __init__(self):
+                self.batch_size = 'batch_size'
+                self.sequence_length = 'sequence_length'
+                self.mask_input = 'mask_input'
+                self.returns_holder = 'returns_holder'
+                self.old_value = 'old_value'
+                self.advantage = 'advantage'
+                self.all_old_log_probs = 'all_old_log_probs'
+                self.output_pre = 'output_pre'
+                self.epsilon = 'epsilon'
+                self.action_holder = 'action_holder'
+                self.prev_action = 'prev_action'
+                self.action_masks = 'action_masks'
+                self.vector_in = 'vector_in'
+                self.visual_in = ['visual_in0', 'visual_in1']
+                self.memory_in = 'memory_in'
+                self.act_size = [2]
+                self.vis_obs_size = 3
+
+        class MockSelf:
+            def __init__(self):
+                self.model = MockModel()
+                self.use_continuous_act = False
+                self.use_recurrent = False
+                self.use_vec_obs = False
+                self.use_curiosity = False
+                self.sequence_length = 1
+                self.vec_obs_size = 4
+                self.brain = MockModel()
+                self.has_updated = False
+
+            def _execute_model(self, feed_dict, update_dict):
+                return ""model_output""
+
+        return MockSelf()
+
+    def test_normal_case(self, setup):
+        mini_batch = {
+            'masks': np.array([[1, 1], [1, 1]]),
+            'discounted_returns': np.array([[0.5], [0.5]]),
+            'value_estimates': np.array([[0.1], [0.2]]),
+            'advantages': np.array([[0.3], [0.4]]),
+            'action_probs': np.array([[0.6, 0.7]]),
+            'actions': np.array([[1, 0]]),
+            'action_mask': np.array([[1, 1]]),
+            'vector_obs': np.array([[0.1, 0.2, 0.3, 0.4]]),
+            'prev_action': np.array([[0]]),
+            'memory': np.array([[[0.5, 0.5]]]),
+        }
+        output = setup.update(mini_batch, 2)
+        assert output == ""model_output""
+        assert setup.has_updated
+
+    def test_boundary_case_zero_sequences(self, setup):
+        mini_batch = {
+            'masks': np.array([[1, 1]]),
+            'discounted_returns': np.array([[0.5]]),
+            'value_estimates': np.array([[0.1]]),
+            'advantages': np.array([[0.3]]),
+            'action_probs': np.array([[0.6, 0.7]]),
+            'actions': np.array([[1, 0]]),
+            'action_mask': np.array([[1, 1]]),
+            'vector_obs': np.array([[0.1, 0.2, 0.3, 0.4]]),
+            'prev_action': np.array([[0]]),
+            'memory': np.array([[[0.5, 0.5]]]),
+        }
+        output = setup.update(mini_batch, 0)
+        assert output == ""model_output""
+        assert setup.has_updated
+
+    def test_edge_case_empty_mini_batch(self, setup):
+        mini_batch = {
+            'masks': np.array([]),
+            'discounted_returns': np.array([]),
+            'value_estimates': np.array([]),
+            'advantages': np.array([]),
+            'action_probs': np.array([]),
+            'actions': np.array([]),
+            'action_mask': np.array([]),
+            'vector_obs': np.array([]),
+            'prev_action': np.array([]),
+            'memory': np.array([]),
+        }
+        output = setup.update(mini_batch, 1)
+        assert output == ""model_output""
+        assert setup.has_updated
+
+    def test_edge_case_large_inputs(self, setup):
+        mini_batch = {
+            'masks': np.random.rand(1000, 1000),
+            'discounted_returns': np.random.rand(1000, 1),
+            'value_estimates': np.random.rand(1000, 1),
+            'advantages': np.random.rand(1000, 1),
+            'action_probs': np.random.rand(1000, 2),
+            'actions': np.random.randint(0, 2, size=(1000, 2)),
+            'action_mask': np.random.randint(0, 2, size=(1000, 2)),
+            'vector_obs': np.random.rand(1000, 4),
+            'prev_action': np.random.randint(0, 2, size=(1000, 1)),
+            'memory': np.random.rand(1000, 1, 2),
+        }
+        output = setup.update(mini_batch, 1000)
+        assert output == ""model_output""
+        assert setup.has_updated
+```",success
+PY-048,functions\PY_048.py,"```python
+import pytest
+
+class MockFKManyClass:
+    update_from_object_fields = ['name', 'value']
+
+    def __init__(self, **kwargs):
+        for key, value in kwargs.items():
+            setattr(self, key, value)
+
+class TestGetFkManyFromList:
+    def test_normal_case(self):
+        object_list = [{'id': 1, 'name': 'Object1', 'value': 10},
+                       {'id': 2, 'name': 'Object2', 'value': 20}]
+        fkmany = [MockFKManyClass(id=1, name='OldName', value=5)]
+        key_attr = 'id'
+        
+        result = get_fk_many_from_list(self, object_list, fkmany, MockFKManyClass, key_attr)
+        
+        assert len(result) == 1
+        assert result[0].name == 'Object1'
+        assert result[0].value == 10
+
+    def test_boundary_case_empty_lists(self):
+        object_list = []
+        fkmany = []
+        key_attr = 'id'
+        
+        result = get_fk_many_from_list(self, object_list, fkmany, MockFKManyClass, key_attr)
+        
+        assert result == []
+
+    def test_boundary_case_one_object(self):
+        object_list = [{'id': 1, 'name': 'Object1', 'value': 10}]
+        fkmany = []
+        key_attr = 'id'
+        
+        result = get_fk_many_from_list(self, object_list, fkmany, MockFKManyClass, key_attr)
+        
+        assert len(result) == 1
+        assert result[0].name == 'Object1'
+        assert result[0].value == 10
+
+    def test_edge_case_removed_fk(self):
+        object_list = [{'id': 1, 'name': 'Object1', 'value': 10}]
+        fkmany = [MockFKManyClass(id=2, name='OldName', value=5)]
+        key_attr = 'id'
+        
+        result = get_fk_many_from_list(self, object_list, fkmany, MockFKManyClass, key_attr)
+        
+        assert len(result) == 1
+        assert result[0].name == 'Object1'
+        assert result[0].value == 10
+
+    def test_edge_case_multiple_new_objects(self):
+        object_list = [{'id': 1, 'name': 'Object1', 'value': 10},
+                       {'id': 2, 'name': 'Object2', 'value': 20}]
+        fkmany = []
+        key_attr = 'id'
+        
+        result = get_fk_many_from_list(self, object_list, fkmany, MockFKManyClass, key_attr)
+        
+        assert len(result) == 2
+        assert result[0].name == 'Object1'
+        assert result[1].name == 'Object2'
+
+    def test_edge_case_no_updates(self):
+        object_list = [{'id': 1, 'name': 'Object1', 'value': 10}]
+        fkmany = [MockFKManyClass(id=1, name='Object1', value=10)]
+        key_attr = 'id'
+        
+        result = get_fk_many_from_list(self, object_list, fkmany, MockFKManyClass, key_attr)
+        
+        assert len(result) == 1
+        assert result[0].name == 'Object1'
+        assert result[0].value == 10
+```",success
+PY-042,functions\PY_042.py,"```python
+import pytest
+import numpy as np
+from unittest.mock import MagicMock
+
+class TestTrainFunction:
+    @pytest.fixture
+    def setup(self):
+        class MockBuffer:
+            def __init__(self):
+                self.returns = np.array([1.0, 2.0, 3.0])
+                self.value_preds = np.array([1.0, 1.5, 2.5])
+                self.active_masks = np.array([1.0, 1.0, 0.0])
+                self.num_mini_batch = 2
+                self.ppo_epoch = 1
+                self.data_chunk_length = 1
+
+            def recurrent_generator(self, advantages, num_mini_batch, data_chunk_length):
+                yield (np.array([1.0]), np.array([1.0]), np.array([1.0]), np.array([1.0]), np.array([1.0]), np.array([1.0]))
+
+            def feed_forward_generator(self, advantages, num_mini_batch):
+                yield (np.array([1.0]), np.array([1.0]), np.array([1.0]), np.array([1.0]), np.array([1.0]), np.array([1.0]))
+
+        class MockModel:
+            def __init__(self):
+                self._use_popart = False
+                self._use_recurrent_policy = False
+                self._use_naive_recurrent = False
+                self.ppo_epoch = 1
+                self.num_mini_batch = 1
+                self.data_chunk_length = 1
+
+            def ppo_update(self, sample, update_actor=True):
+                return (1.0, 1.0, 1.0, 1.0, 1.0, np.array([1.0]))
+
+        return MockModel(), MockBuffer()
+
+    def test_train_normal_case(self, setup):
+        model, buffer = setup
+        train_info = model.train(buffer)
+        assert isinstance(train_info, dict)
+        assert train_info['value_loss'] == 1.0
+        assert train_info['policy_loss'] == 1.0
+        assert train_info['dist_entropy'] == 1.0
+        assert train_info['actor_grad_norm'] == 1.0
+        assert train_info['critic_grad_norm'] == 1.0
+        assert train_info['ratio'] == 1.0
+
+    def test_train_with_popart(self, setup):
+        model, buffer = setup
+        model._use_popart = True
+        train_info = model.train(buffer)
+        assert isinstance(train_info, dict)
+
+    def test_train_with_zero_advantages(self, setup):
+        model, buffer = setup
+        buffer.returns = np.array([0.0, 0.0, 0.0])
+        buffer.value_preds = np.array([0.0, 0.0, 0.0])
+        train_info = model.train(buffer)
+        assert isinstance(train_info, dict)
+
+    def test_train_with_empty_buffer(self, setup):
+        model, buffer = setup
+        buffer.returns = np.array([])
+        buffer.value_preds = np.array([])
+        buffer.active_masks = np.array([])
+        with pytest.raises(ValueError):
+            model.train(buffer)
+
+    def test_train_with_single_element_buffer(self, setup):
+        model, buffer = setup
+        buffer.returns = np.array([1.0])
+        buffer.value_preds = np.array([1.0])
+        buffer.active_masks = np.array([1.0])
+        train_info = model.train(buffer)
+        assert isinstance(train_info, dict)
+
+    def test_train_with_nan_in_advantages(self, setup):
+        model, buffer = setup
+        buffer.returns = np.array([1.0, 2.0, 3.0])
+        buffer.value_preds = np.array([1.0, 1.0, 1.0])
+        buffer.active_masks = np.array([1.0, 1.0, 0.0])
+        train_info = model.train(buffer)
+        assert isinstance(train_info, dict)
+        assert not np.isnan(train_info['value_loss'])
+```",success
+PY-043,functions\PY_043.py,"```python
+import pytest
+
+def test_validate_fillna_kwargs_value_only():
+    assert validate_fillna_kwargs(5, None) == (5, None)
+    assert validate_fillna_kwargs({'key': 'value'}, None) == ({'key': 'value'}, None)
+
+def test_validate_fillna_kwargs_method_only():
+    assert validate_fillna_kwargs(None, 'ffill') == (None, 'ffill')
+    assert validate_fillna_kwargs(None, 'bfill') == (None, 'bfill')
+
+def test_validate_fillna_kwargs_both():
+    with pytest.raises(ValueError, match=""Cannot specify both 'value' and 'method'.""):
+        validate_fillna_kwargs(5, 'ffill')
+
+def test_validate_fillna_kwargs_none():
+    with pytest.raises(ValueError, match=""Must specify a fill 'value' or 'method'.""):
+        validate_fillna_kwargs(None, None)
+
+def test_validate_fillna_kwargs_invalid_value_type():
+    with pytest.raises(TypeError, match='""value"" parameter must be a scalar or dict, but you passed a ""list""'):
+        validate_fillna_kwargs([1, 2, 3], None)
+
+    with pytest.raises(TypeError, match='""value"" parameter must be a scalar or dict, but you passed a ""tuple""'):
+        validate_fillna_kwargs((1, 2), None)
+
+def test_validate_fillna_kwargs_valid_dict_value():
+    assert validate_fillna_kwargs({'key': 'value'}, None) == ({'key': 'value'}, None)
+
+def test_validate_fillna_kwargs_valid_scalar_value():
+    assert validate_fillna_kwargs(10, None) == (10, None)
+
+def test_validate_fillna_kwargs_edge_case_empty_dict():
+    assert validate_fillna_kwargs({}, None) == ({}, None)
+
+def test_validate_fillna_kwargs_edge_case_empty_string():
+    assert validate_fillna_kwargs("""", None) == ("""", None)
+
+def test_validate_fillna_kwargs_edge_case_none_value():
+    assert validate_fillna_kwargs(None, 'ffill') == (None, 'ffill')
+```",success
+PY-049,functions\PY_049.py,"```python
+import pytest
+
+def merge_intervals(intervals):
+    if not intervals:
+        return []
+    intervals = sorted(intervals, key=lambda x: x[0])
+    merged = [intervals[0]]
+    for current in intervals[1:]:
+        last = merged[-1]
+        if current[0] <= last[1]:
+            if current[1] > last[1]:
+                merged[-1] = (last[0], current[1])
+        else:
+            merged.append(current)
+    return merged
+
+def test_merge_intervals():
+    # Normal test cases
+    assert merge_intervals([(1, 3), (2, 6), (8, 10), (15, 18)]) == [(1, 6), (8, 10), (15, 18)]
+    assert merge_intervals([(1, 4), (4, 5)]) == [(1, 5)]
+    
+    # Boundary test cases
+    assert merge_intervals([(1, 2)]) == [(1, 2)]
+    assert merge_intervals([(1, 5), (2, 3)]) == [(1, 5)]
+    
+    # Edge cases
+    assert merge_intervals([]) == []
+    assert merge_intervals([(1, 4), (0, 4)]) == [(0, 4)]
+    assert merge_intervals([(1, 2), (3, 4), (5, 6)]) == [(1, 2), (3, 4), (5, 6)]
+    assert merge_intervals([(1, 10), (2, 3), (4, 5), (6, 7), (8, 9)]) == [(1, 10)]
+    assert merge_intervals([(1, 2), (2, 3), (3, 4), (4, 5)]) == [(1, 5)]
+```",success
+PY-050,functions\PY_050.py,"```python
+import pytest
+
+def test_schedule_tasks_normal_cases():
+    tasks = [
+        {""name"": ""task1"", ""duration"": 2, ""priority"": 1},
+        {""name"": ""task2"", ""duration"": 3, ""priority"": 2},
+        {""name"": ""task3"", ""duration"": 1, ""priority"": 3},
+    ]
+    expected = {
+        0: [{""name"": ""task2"", ""duration"": 3, ""priority"": 2}],
+        1: [{""name"": ""task1"", ""duration"": 2, ""priority"": 1}],
+        2: [{""name"": ""task3"", ""duration"": 1, ""priority"": 3}],
+        3: [],
+    }
+    assert schedule_tasks(tasks) == expected
+
+def test_schedule_tasks_boundary_cases():
+    tasks = [
+        {""name"": ""task1"", ""duration"": 0, ""priority"": 1},
+        {""name"": ""task2"", ""duration"": 1, ""priority"": 2},
+        {""name"": ""task3"", ""duration"": 1, ""priority"": 3},
+    ]
+    expected = {
+        0: [{""name"": ""task2"", ""duration"": 1, ""priority"": 2}],
+        1: [{""name"": ""task3"", ""duration"": 1, ""priority"": 3}],
+        2: [],
+        3: [],
+    }
+    assert schedule_tasks(tasks) == expected
+
+def test_schedule_tasks_edge_cases():
+    tasks = []
+    expected = {0: [], 1: [], 2: [], 3: []}
+    assert schedule_tasks(tasks) == expected
+
+    tasks = [{""name"": ""task1"", ""duration"": -1, ""priority"": 1}]
+    expected = {0: [], 1: [], 2: [], 3: []}
+    assert schedule_tasks(tasks) == expected
+
+    tasks = [{""name"": ""task1"", ""duration"": 1, ""priority"": 1}] * 5
+    expected = {
+        0: [{""name"": ""task1"", ""duration"": 1, ""priority"": 1}],
+        1: [{""name"": ""task1"", ""duration"": 1, ""priority"": 1}],
+        2: [{""name"": ""task1"", ""duration"": 1, ""priority"": 1}],
+        3: [{""name"": ""task1"", ""duration"": 1, ""priority"": 1}],
+    }
+    assert schedule_tasks(tasks, max_workers=4) == expected
+
+def test_schedule_tasks_with_max_workers():
+    tasks = [
+        {""name"": ""task1"", ""duration"": 2, ""priority"": 1},
+        {""name"": ""task2"", ""duration"": 3, ""priority"": 2},
+        {""name"": ""task3"", ""duration"": 1, ""priority"": 3},
+        {""name"": ""task4"", ""duration"": 4, ""priority"": 4},
+    ]
+    expected = {
+        0: [{""name"": ""task4"", ""duration"": 4, ""priority"": 4}],
+        1: [{""name"": ""task2"", ""duration"": 3, ""priority"": 2}],
+        2: [{""name"": ""task1"", ""duration"": 2, ""priority"": 1}],
+        3: [{""name"": ""task3"", ""duration"": 1, ""priority"": 3}],
+    }
+    assert schedule_tasks(tasks, max_workers=4) == expected
+```",success
+PY-051,functions\PY_051.py,"```python
+import pytest
+
+def test_compute_discount():
+    # Normal test cases
+    assert compute_discount(100, ""gold"") == 85.0
+    assert compute_discount(100, ""silver"") == 90.0
+    assert compute_discount(100, ""bronze"") == 95.0
+    assert compute_discount(100, ""gold"", ""SALE"") == 80.0
+    assert compute_discount(100, ""silver"", ""VIP"") == 80.0
+    assert compute_discount(100, ""bronze"", is_first_order=True) == 90.0
+
+    # Boundary test cases
+    assert compute_discount(0, ""gold"") == 0.0
+    assert compute_discount(0, ""silver"") == 0.0
+    assert compute_discount(0, ""bronze"") == 0.0
+    assert compute_discount(100, ""gold"", coupon=""SALE"") == 80.0
+    assert compute_discount(100, ""silver"", coupon=""VIP"") == 80.0
+
+    # Edge cases
+    assert compute_discount(100, ""gold"", coupon=""INVALID"") == 85.0
+    assert compute_discount(100, ""gold"", coupon=""SALE"", is_first_order=True) == 80.0
+    assert compute_discount(100, ""gold"", coupon=""VIP"", is_first_order=True) == 75.0
+    assert compute_discount(100, ""gold"", coupon=""SALE"", is_first_order=False) == 80.0
+    assert compute_discount(100, ""silver"", coupon=""SALE"", is_first_order=True) == 85.0
+    assert compute_discount(100, ""silver"", coupon=""VIP"", is_first_order=True) == 80.0
+    assert compute_discount(100, ""bronze"", coupon=""SALE"", is_first_order=True) == 85.0
+    assert compute_discount(100, ""bronze"", coupon=""VIP"", is_first_order=True) == 80.0
+    assert compute_discount(100, ""gold"", coupon=""SALE"", is_first_order=True) == 80.0
+    assert compute_discount(100, ""gold"", coupon=""VIP"", is_first_order=True) == 75.0
+    assert compute_discount(100, ""gold"", coupon=""SALE"", is_first_order=False) == 80.0
+    assert compute_discount(100, ""silver"", coupon=""VIP"", is_first_order=False) == 90.0
+    assert compute_discount(100, ""bronze"", coupon=""INVALID"", is_first_order=False) == 95.0
+```",success
+PY-052,functions\PY_052.py,"```python
+import pytest
+
+def test_validate_password():
+    # Normal test cases
+    assert validate_password(""Password1"") == True
+    assert validate_password(""Password!"") == True
+    assert validate_password(""password1"") == False
+    assert validate_password(""PASSWORD1"") == False
+    assert validate_password(""Pass1"") == False
+    assert validate_password(""Pass!1"") == True
+
+    # Boundary test cases
+    assert validate_password(""Pass1234"") == True
+    assert validate_password(""Pass123"") == False
+    assert validate_password(""12345678"") == False
+    assert validate_password(""abcdefgh"") == False
+    assert validate_password(""ABCDEFGH"") == False
+    assert validate_password(""!@#$%^&*"") == False
+
+    # Edge cases
+    assert validate_password("""") == False
+    assert validate_password(""1234567"") == False
+    assert validate_password(""abcdefgh"", require_digit=False, require_upper=False) == True
+    assert validate_password(""ABCDEFGH"", require_digit=False, require_special=True) == False
+    assert validate_password(""Password"", require_special=True) == False
+    assert validate_password(""Password1!"", require_special=True) == True
+    assert validate_password(""P@ssw0rd"", require_special=True) == True
+```",success
+PY-053,functions\PY_053.py,"```python
+import pytest
+
+def test_calculate_shipping_normal_cases():
+    assert calculate_shipping(1, 50) == 5.0
+    assert calculate_shipping(2, 50) == 6.5
+    assert calculate_shipping(1, 150) == 5.5
+    assert calculate_shipping(2, 150) == 7.0
+    assert calculate_shipping(3, 200, express=True) == 10.5
+    assert calculate_shipping(1, 200, fragile=True) == 8.0
+    assert calculate_shipping(2, 200, express=True, fragile=True) == 12.0
+    assert calculate_shipping(1, 200, country=""international"") == 10.0
+    assert calculate_shipping(2, 200, country=""regional"") == 9.0
+
+def test_calculate_shipping_boundary_cases():
+    assert calculate_shipping(1, 50) == 5.0
+    assert calculate_shipping(1, 51) == 5.01
+    assert calculate_shipping(1, 100) == 5.5
+    assert calculate_shipping(1, 101) == 5.52
+    assert calculate_shipping(1, 200) == 10.0
+    assert calculate_shipping(1, 201) == 10.02
+    assert calculate_shipping(1, 100, express=True) == 8.25
+    assert calculate_shipping(1, 100, fragile=True) == 8.5
+
+def test_calculate_shipping_edge_cases():
+    assert calculate_shipping(0, 0) == 5.0
+    assert calculate_shipping(0, 50) == 5.0
+    assert calculate_shipping(1, 0) == 5.0
+    assert calculate_shipping(1, 1) == 5.0
+    assert calculate_shipping(1, 50, express=True) == 7.5
+    assert calculate_shipping(1, 50, fragile=True) == 8.0
+    assert calculate_shipping(1, 50, express=True, fragile=True) == 10.5
+    assert calculate_shipping(1, 50, country=""international"") == 10.0
+    assert calculate_shipping(1, 50, country=""regional"") == 6.0
+    assert calculate_shipping(1, 200, country=""international"") == 10.0
+    assert calculate_shipping(1, 200, country=""regional"") == 9.0
+```",success
+PY-054,functions\PY_054.py,"```python
+import pytest
+
+def test_build_query_string_normal_cases():
+    assert build_query_string({'a': 1, 'b': 2}) == 'a=1&b=2'
+    assert build_query_string({'name': 'John Doe', 'age': 30}) == 'age=30&name=John+Doe'
+    assert build_query_string({'key': None, 'value': 'test'}, exclude_none=False) == 'key=&value=test'
+    assert build_query_string({'key': None, 'value': 'test'}) == 'value=test'
+
+def test_build_query_string_sort_keys():
+    assert build_query_string({'b': 2, 'a': 1}) == 'a=1&b=2'
+    assert build_query_string({'c': 3, 'a': 1, 'b': 2}) == 'a=1&b=2&c=3'
+
+def test_build_query_string_with_booleans():
+    assert build_query_string({'is_active': True, 'is_deleted': False}) == 'is_active=true&is_deleted=false'
+
+def test_build_query_string_with_lists():
+    assert build_query_string({'ids': [1, 2, 3]}) == 'ids=1&ids=2&ids=3'
+    assert build_query_string({'tags': ['python', 'pytest']}) == 'tags=python&tags=pytest'
+
+def test_build_query_string_exclude_none():
+    assert build_query_string({'key1': None, 'key2': 'value2'}) == 'key2=value2'
+    assert build_query_string({'key1': None, 'key2': None}, exclude_none=False) == 'key1=&key2='
+
+def test_build_query_string_encode_spaces():
+    assert build_query_string({'name': 'John Doe', 'city': 'New York'}) == 'city=New+York&name=John+Doe'
+    assert build_query_string({'name': 'John Doe', 'city': 'New York'}, encode_spaces=False) == 'city=New York&name=John Doe'
+
+def test_build_query_string_empty_params():
+    assert build_query_string({}) == ''
+
+def test_build_query_string_boundary_cases():
+    assert build_query_string({'key': ''}) == 'key='
+    assert build_query_string({'key': 0}) == 'key=0'
+    assert build_query_string({'key': False}) == 'key=false'
+
+def test_build_query_string_edge_cases():
+    assert build_query_string({'key': [None, 'value']}) == 'key=value'
+    assert build_query_string({'key': [None, None]}) == ''
+    assert build_query_string({'key': [True, False]}) == 'key=true&key=false'
+```",success
+PY-055,functions\PY_055.py,"```python
+import pytest
+
+def test_normalize_path():
+    assert normalize_path(""/a/b/c"") == ""/a/b/c""
+    assert normalize_path(""a/b/c"", ""/base"") == ""/base/a/b/c""
+    assert normalize_path(""/a/b/../c"") == ""/a/c""
+    assert normalize_path(""/a/./b/c"") == ""/a/b/c""
+    assert normalize_path(""a/b/c"", ""/base"") == ""/base/a/b/c""
+    assert normalize_path(""/a/b/c/"", allow_empty=True) == ""/a/b/c""
+    assert normalize_path("""", allow_empty=True) == """"
+
+def test_boundary_cases():
+    assert normalize_path(""/a/b/c/"") == ""/a/b/c""
+    assert normalize_path(""/a/b/c/.."") == ""/a/b""
+    assert normalize_path(""/.."") == ""/""
+    assert normalize_path(""/a/../.."") == ""/""
+    assert normalize_path("".."", ""/base"") == ""/base/..""
+
+def test_edge_cases():
+    with pytest.raises(ValueError, match=""path is required""):
+        normalize_path(None)
+    assert normalize_path("".."", strict=True) == ""/""
+    assert normalize_path("".."", strict=False) == ""/..""
+    assert normalize_path(""/a/b/c/../../d"") == ""/d""
+    assert normalize_path(""/./././"") == ""/""
+    assert normalize_path(""/a/b/c"", strict=True) == ""/a/b/c""
+```",success
+PY-056,functions\PY_056.py,"```python
+import pytest
+
+def test_classify_shipment_priority():
+    # Normal test cases
+    assert classify_shipment_priority(5, 100, 50, False, False, ""bronze"") == ""low""
+    assert classify_shipment_priority(15, 300, 150, True, False, ""silver"") == ""high""
+    assert classify_shipment_priority(25, 600, 2000, True, True, ""gold"") == ""urgent""
+    assert classify_shipment_priority(10, 250, 500, False, True, ""bronze"") == ""normal""
+
+    # Boundary test cases
+    assert classify_shipment_priority(10, 200, 100, False, False, ""bronze"") == ""normal""
+    assert classify_shipment_priority(20, 500, 1000, False, False, ""bronze"") == ""normal""
+    assert classify_shipment_priority(21, 501, 1001, True, True, ""gold"") == ""urgent""
+    assert classify_shipment_priority(10, 201, 101, False, False, ""bronze"") == ""normal""
+
+    # Edge cases
+    assert classify_shipment_priority(0, 0, 0, False, False, ""bronze"") == ""low""
+    assert classify_shipment_priority(0, 0, 1001, True, True, ""gold"") == ""urgent""
+    assert classify_shipment_priority(20, 0, 0, False, False, ""bronze"") == ""low""
+    assert classify_shipment_priority(20, 0, 1001, True, True, ""gold"") == ""urgent""
+    assert classify_shipment_priority(5, 1000, 100, True, True, ""silver"") == ""high""
+```",success
+PY-057,functions\PY_057.py,"```python
+import pytest
+
+def test_parse_csv_line_normal_cases():
+    assert parse_csv_line(""a,b,c"") == [""a"", ""b"", ""c""]
+    assert parse_csv_line(""1,2,3"") == [""1"", ""2"", ""3""]
+    assert parse_csv_line(""name,age,city"") == [""name"", ""age"", ""city""]
+    assert parse_csv_line(""apple,banana,cherry"") == [""apple"", ""banana"", ""cherry""]
+
+def test_parse_csv_line_with_quotes():
+    assert parse_csv_line('""a,b"",c') == ['a,b', 'c']
+    assert parse_csv_line('""a"",""b"",""c""') == ['a', 'b', 'c']
+    assert parse_csv_line('""a, b"", ""c""') == ['a, b', 'c']
+    assert parse_csv_line('""a""""b"",c') == ['a""b', 'c']
+
+def test_parse_csv_line_with_delimiter():
+    assert parse_csv_line(""a|b|c"", delimiter=""|"") == [""a"", ""b"", ""c""]
+    assert parse_csv_line(""1|2|3"", delimiter=""|"") == [""1"", ""2"", ""3""]
+
+def test_parse_csv_line_trim_whitespace():
+    assert parse_csv_line(""  a , b , c  "", trim_whitespace=True) == [""a"", ""b"", ""c""]
+    assert parse_csv_line(""  a ,  , c  "", trim_whitespace=True, skip_empty=True) == [""a"", ""c""]
+
+def test_parse_csv_line_skip_empty():
+    assert parse_csv_line(""a,,c"", skip_empty=True) == [""a"", ""c""]
+    assert parse_csv_line("",,"", skip_empty=True) == []
+
+def test_parse_csv_line_boundary_cases():
+    assert parse_csv_line("""") == []
+    assert parse_csv_line("","", skip_empty=True) == []
+    assert parse_csv_line("","", skip_empty=False) == ["""", """"]
+
+def test_parse_csv_line_edge_cases():
+    assert parse_csv_line('""a,b"",,,""c""', skip_empty=True) == ['a,b', 'c']
+    assert parse_csv_line('""""""a,b""""""', skip_empty=False) == ['""a,b""']
+    assert parse_csv_line('""""""a,b"", ""c""""""', skip_empty=False) == ['""a,b""', 'c']
+```",success
+PY-058,functions\PY_058.py,"```python
+import pytest
+
+def test_compute_loan_eligibility():
+    # Normal test cases
+    assert compute_loan_eligibility(5000, 700, 2000, 2, 30, True) == True
+    assert compute_loan_eligibility(3000, 650, 1000, 1, 25, False) == False
+    assert compute_loan_eligibility(4000, 600, 2500, 4, 40, True) == False
+    assert compute_loan_eligibility(6000, 750, 1000, 5, 35, True) == True
+
+    # Boundary test cases
+    assert compute_loan_eligibility(0, 700, 0, 2, 30, True) == False  # income = 0
+    assert compute_loan_eligibility(5000, 500, 2000, 2, 30, True) == False  # credit_score = 500
+    assert compute_loan_eligibility(5000, 750, 2000, 2, 30, True) == True  # credit_score = 750
+    assert compute_loan_eligibility(5000, 650, 2500, 1, 30, True) == False  # employment_years = 1, credit_score < 700
+    assert compute_loan_eligibility(5000, 600, 2000, 2, 30, True) == False  # employment_years = 2, credit_score < 600
+
+    # Edge cases
+    assert compute_loan_eligibility(5000, 700, 3000, 2, 30, False) == False  # debt_ratio > 0.5, no collateral
+    assert compute_loan_eligibility(5000, 600, 1000, 2, 30, True) == True  # debt_ratio <= 0.2, has collateral
+    assert compute_loan_eligibility(5000, 650, 2000, 2, 30, True) == True  # debt_ratio <= 0.4, has collateral
+    assert compute_loan_eligibility(5000, 650, 3000, 2, 30, False) == False  # debt_ratio > 0.4, no collateral
+    assert compute_loan_eligibility(5000, 700, 2500, 0, 30, True) == False  # employment_years = 0
+    assert compute_loan_eligibility(5000, 700, 2500, 3, 17, True) == False  # age < 18
+    assert compute_loan_eligibility(5000, 700, 2500, 3, 71, True) == False  # age > 70
+```",success
+PY-060,functions\PY_060.py,"```python
+import pytest
+
+def test_grade_exam_normal_cases():
+    assert grade_exam(85, 95, False, 0, False, False) == ""B""
+    assert grade_exam(70, 80, False, 5, False, False) == ""C""
+    assert grade_exam(60, 90, False, 0, False, False) == ""D""
+    assert grade_exam(50, 40, False, 0, False, False) == ""F""
+    assert grade_exam(95, 100, False, 0, False, False) == ""A""
+
+def test_grade_exam_boundary_cases():
+    assert grade_exam(89, 95, False, 0, False, False) == ""B""
+    assert grade_exam(90, 95, False, 0, False, False) == ""A""
+    assert grade_exam(79, 75, False, 0, False, False) == ""C""
+    assert grade_exam(80, 75, False, 0, False, False) == ""B""
+    assert grade_exam(69, 50, False, 0, False, False) == ""F""
+    assert grade_exam(70, 50, False, 0, False, False) == ""D""
+
+def test_grade_exam_edge_cases():
+    assert grade_exam(100, 100, False, 0, False, False) == ""A""
+    assert grade_exam(0, 0, False, 0, False, False) == ""F""
+    assert grade_exam(100, 100, True, 0, False, False) == ""A""
+    assert grade_exam(100, 100, False, 0, True, False) == ""B""
+    assert grade_exam(100, 100, False, 0, False, True) == ""A""
+    assert grade_exam(100, 100, True, 0, True, True) == ""A""
+
+def test_grade_exam_with_late_penalty():
+    assert grade_exam(85, 95, True, 0, False, False) == ""B""
+    assert grade_exam(85, 95, True, 5, False, False) == ""B""
+    assert grade_exam(85, 95, True, 0, True, False) == ""B""
+    assert grade_exam(85, 95, True, 0, False, True) == ""B""
+
+def test_grade_exam_with_disability_accommodation():
+    assert grade_exam(85, 95, True, 0, False, True) == ""B""
+    assert grade_exam(85, 40, True, 0, False, True) == ""D""
+    assert grade_exam(85, 40, True, 5, False, True) == ""D""
+    assert grade_exam(85, 40, True, 0, True, True) == ""D""
+```",success
+PY-062,functions\PY_062.py,"```python
+import pytest
+
+def test_validate_form_submission():
+    # Normal test cases
+    assert validate_form_submission(
+        {'name': 'John', 'email': 'john@example.com'},
+        ['name', 'email'],
+        {'name': 50, 'email': 100},
+        {}
+    ) == []
+
+    assert validate_form_submission(
+        {'name': '', 'email': 'john@example.com'},
+        ['name', 'email'],
+        {'name': 50, 'email': 100},
+        {}
+    ) == ['name is required']
+
+    assert validate_form_submission(
+        {'name': 'John', 'email': 'invalidemail'},
+        ['name', 'email'],
+        {'name': 50, 'email': 100},
+        {}
+    ) == ['invalid email']
+
+    # Boundary test cases
+    assert validate_form_submission(
+        {'name': 'A' * 50, 'email': 'john@example.com'},
+        ['name', 'email'],
+        {'name': 50, 'email': 100},
+        {}
+    ) == []
+
+    assert validate_form_submission(
+        {'name': 'A' * 51, 'email': 'john@example.com'},
+        ['name', 'email'],
+        {'name': 50, 'email': 100},
+        {}
+    ) == ['name exceeds max length']
+
+    # Edge cases
+    assert validate_form_submission(
+        {},
+        ['name', 'email'],
+        {'name': 50, 'email': 100},
+        {}
+    ) == ['name is required', 'email is required']
+
+    assert validate_form_submission(
+        {'name': 'John', 'email': ''},
+        ['name', 'email'],
+        {'name': 50, 'email': 100},
+        {}
+    ) == ['email is required']
+
+    assert validate_form_submission(
+        {'name': 'John', 'email': 'john@@example.com'},
+        ['name', 'email'],
+        {'name': 50, 'email': 100},
+        {}
+    ) == ['invalid email']
+
+    assert validate_form_submission(
+        {'name': 'John', 'email': 'john@example.com'},
+        ['name', 'email'],
+        {'name': 50, 'email': 100},
+        {'name': lambda x: x.isalpha()}
+    ) == []
+
+    assert validate_form_submission(
+        {'name': 'John123', 'email': 'john@example.com'},
+        ['name', 'email'],
+        {'name': 50, 'email': 100},
+        {'name': lambda x: x.isalpha()}
+    ) == ['name failed validation']
+```",success
+PY-063,functions\PY_063.py,"```python
+import pytest
+
+def test_compute_tax_bracket():
+    # Normal test cases
+    assert compute_tax_bracket(50000, ""single"", 10000, 0, False) == 6750.0
+    assert compute_tax_bracket(30000, ""married"", 5000, 1, False) == 3750.0
+    assert compute_tax_bracket(15000, ""single"", 2000, 0, True) == 1300.0
+    assert compute_tax_bracket(60000, ""married"", 20000, 2, True) == 5700.0
+
+    # Boundary test cases
+    assert compute_tax_bracket(10000, ""single"", 0, 0, False) == 1000.0
+    assert compute_tax_bracket(40000, ""single"", 0, 0, False) == 5250.0
+    assert compute_tax_bracket(90000, ""single"", 0, 0, False) == 18750.0
+    assert compute_tax_bracket(20000, ""married"", 0, 0, False) == 2000.0
+    assert compute_tax_bracket(80000, ""married"", 0, 0, False) == 10500.0
+
+    # Edge cases
+    assert compute_tax_bracket(0, ""single"", 0, 0, False) == 0.0
+    assert compute_tax_bracket(0, ""married"", 0, 0, False) == 0.0
+    assert compute_tax_bracket(0, ""single"", 0, 0, True) == 0.0
+    assert compute_tax_bracket(2000, ""single"", 2000, 0, False) == 0.0
+    assert compute_tax_bracket(2000, ""single"", 2000, 0, True) == 0.0
+    assert compute_tax_bracket(15000, ""single"", 2000, 0, True) == 1300.0
+    assert compute_tax_bracket(20000, ""married"", 20000, 0, True) == 0.0
+```",success
+PY-064,functions\PY_064.py,"```python
+import pytest
+
+def test_detect_anomaly_normal_cases():
+    assert detect_anomaly([1, 2, 3, 4, 5], 3, 0.5, 2, False) == []
+    assert detect_anomaly([1, 2, 3, 10, 5], 3, 0.5, 2, False) == [(3, ""high"")]
+    assert detect_anomaly([10, 9, 8, 7, 6], 8, 0.5, 2, False) == [(0, ""low"")]
+    assert detect_anomaly([1, 2, 3, 4, 5], 3, 0.5, 2, True) == []
+
+def test_detect_anomaly_boundary_cases():
+    assert detect_anomaly([3, 3, 3], 3, 0.0, 1, False) == []
+    assert detect_anomaly([3, 3, 3], 3, 0.0, 2, False) == []
+    assert detect_anomaly([3, 4, 5], 3, 0.5, 1, False) == [(2, ""high"")]
+    assert detect_anomaly([3, 2, 1], 3, 0.5, 1, False) == [(2, ""low"")]
+
+def test_detect_anomaly_edge_cases():
+    assert detect_anomaly([], 3, 0.5, 2, False) == []
+    assert detect_anomaly([0], 0, 0.5, 1, False) == []
+    assert detect_anomaly([1, 2, 3, 4, 5], 0, 0.5, 2, False) == [(0, ""high""), (1, ""high""), (2, ""high""), (3, ""high""), (4, ""high"")]
+    assert detect_anomaly([1, 2, 3, 4, 5], 0, 0.5, 2, True) == [(0, ""high""), (1, ""high""), (2, ""high""), (3, ""high""), (4, ""high"")]
+
+def test_detect_anomaly_with_smoothing():
+    assert detect_anomaly([1, 2, 3, 10, 5], 3, 0.5, 2, False, smoothing=True) == [(3, ""high"")]
+    assert detect_anomaly([1, 2, 3, 10, 5], 3, 0.5, 2, False, smoothing=False) == [(3, ""high"")]
+    assert detect_anomaly([1, 2, 3, 4, 5], 3, 0.5, 2, False, smoothing=True) == []
+    assert detect_anomaly([1, 2, 3, 4, 5], 3, 0.5, 2, True, smoothing=True) == []
+```",success
+PY-065,functions\PY_065.py,"```python
+import pytest
+
+def test_assign_seat_vip_first_class():
+    available_seats = [{""class"": ""first""}, {""class"": ""economy""}]
+    assert assign_seat(""John Doe"", available_seats, {}, True, 1) == {""class"": ""first""}
+
+def test_assign_seat_group_adjacent_seats():
+    available_seats = [{""adjacent_free"": 2}, {""adjacent_free"": 0}]
+    assert assign_seat(""Group"", available_seats, {}, False, 3) == {""adjacent_free"": 2}
+
+def test_assign_seat_window_preference():
+    available_seats = [{""type"": ""aisle""}, {""type"": ""window""}]
+    preferences = {""window"": True}
+    assert assign_seat(""Jane Doe"", available_seats, preferences, False, 1) == {""type"": ""window""}
+
+def test_assign_seat_aisle_preference():
+    available_seats = [{""type"": ""window""}, {""type"": ""aisle""}]
+    preferences = {""aisle"": True}
+    assert assign_seat(""Jane Doe"", available_seats, preferences, False, 1) == {""type"": ""aisle""}
+
+def test_assign_seat_no_preferences():
+    available_seats = [{""type"": ""window""}, {""type"": ""aisle""}]
+    assert assign_seat(""John Doe"", available_seats, {}, False, 1) == {""type"": ""window""}
+
+def test_assign_seat_empty_available_seats():
+    assert assign_seat(""John Doe"", [], {}, False, 1) is None
+
+def test_assign_seat_group_size_one():
+    available_seats = [{""adjacent_free"": 0}, {""type"": ""window""}]
+    assert assign_seat(""Single Passenger"", available_seats, {}, False, 1) == {""adjacent_free"": 0}
+
+def test_assign_seat_group_size_exceeds_adjacent():
+    available_seats = [{""adjacent_free"": 1}, {""adjacent_free"": 0}]
+    assert assign_seat(""Group"", available_seats, {}, False, 3) == {""adjacent_free"": 1}
+
+def test_assign_seat_vip_no_first_class():
+    available_seats = [{""class"": ""economy""}]
+    assert assign_seat(""VIP Passenger"", available_seats, {}, True, 1) == {""class"": ""economy""}
+
+def test_assign_seat_multiple_preferences():
+    available_seats = [{""type"": ""aisle""}, {""type"": ""window""}]
+    preferences = {""window"": True, ""aisle"": True}
+    assert assign_seat(""Passenger"", available_seats, preferences, False, 1) == {""type"": ""window""}
+```",success
+PY-066,functions\PY_066.py,"```python
+import pytest
+
+class TestGetItemBlock:
+    class MockClass:
+        def __init__(self, mgr_locs, ndim):
+            self.mgr_locs = mgr_locs
+            self.ndim = ndim
+
+        def _slice(self, slicer):
+            return self.mgr_locs[slicer]
+
+        def make_block_same_class(self, new_values, new_mgr_locs):
+            return new_values, new_mgr_locs
+
+    def test_getitem_block_normal_case(self):
+        obj = self.MockClass(mgr_locs=[0, 1, 2, 3, 4], ndim=1)
+        result = obj.getitem_block(slice(1, 3))
+        assert result == ([1, 2], [1, 2])
+
+    def test_getitem_block_tuple_slicer(self):
+        obj = self.MockClass(mgr_locs=[0, 1, 2, 3, 4], ndim=1)
+        result = obj.getitem_block((slice(1, 3),))
+        assert result == ([1, 2], [1, 2])
+
+    def test_getitem_block_empty_slice(self):
+        obj = self.MockClass(mgr_locs=[0, 1, 2, 3, 4], ndim=1)
+        result = obj.getitem_block(slice(3, 3))
+        assert result == ([], [])
+
+    def test_getitem_block_full_slice(self):
+        obj = self.MockClass(mgr_locs=[0, 1, 2, 3, 4], ndim=1)
+        result = obj.getitem_block(slice(None))
+        assert result == ([0, 1, 2, 3, 4], [0, 1, 2, 3, 4])
+
+    def test_getitem_block_invalid_ndim(self):
+        obj = self.MockClass(mgr_locs=[0, 1, 2, 3, 4], ndim=2)
+        with pytest.raises(ValueError, match=""Only same dim slicing is allowed""):
+            obj.getitem_block(slice(1, 3))
+
+    def test_getitem_block_single_element(self):
+        obj = self.MockClass(mgr_locs=[0, 1, 2, 3, 4], ndim=1)
+        result = obj.getitem_block(2)
+        assert result == ([2], [2])
+
+    def test_getitem_block_negative_index(self):
+        obj = self.MockClass(mgr_locs=[0, 1, 2, 3, 4], ndim=1)
+        result = obj.getitem_block(-1)
+        assert result == ([4], [4])
+
+    def test_getitem_block_out_of_bounds(self):
+        obj = self.MockClass(mgr_locs=[0, 1, 2, 3, 4], ndim=1)
+        with pytest.raises(IndexError):
+            obj.getitem_block(5)
+
+    def test_getitem_block_none_slicer(self):
+        obj = self.MockClass(mgr_locs=[0, 1, 2, 3, 4], ndim=1)
+        result = obj.getitem_block(None)
+        assert result == ([0, 1, 2, 3, 4], [0, 1, 2, 3, 4])
+```",success
+PY-067,functions\PY_067.py,"```python
+import pytest
+import numpy as np
+
+# Assuming the akima_interpolate function is defined in a module named 'interpolation'
+from interpolation import akima_interpolate
+
+def test_akima_interpolate_normal_cases():
+    xi = np.array([1, 2, 3, 4, 5])
+    yi = np.array([2, 3, 5, 4, 6])
+    x = np.array([1.5, 2.5, 3.5])
+    expected = np.array([2.5, 4.0, 4.5])
+    result = akima_interpolate(xi, yi, x)
+    np.testing.assert_almost_equal(result, expected)
+
+def test_akima_interpolate_boundary_cases():
+    xi = np.array([0, 1, 2])
+    yi = np.array([0, 1, 0])
+    x = np.array([0, 2])
+    expected = np.array([0, 0])
+    result = akima_interpolate(xi, yi, x)
+    np.testing.assert_almost_equal(result, expected)
+
+def test_akima_interpolate_edge_case_single_point():
+    xi = np.array([1])
+    yi = np.array([1])
+    x = np.array([1])
+    expected = np.array([1])
+    result = akima_interpolate(xi, yi, x)
+    np.testing.assert_almost_equal(result, expected)
+
+def test_akima_interpolate_edge_case_empty_input():
+    xi = np.array([])
+    yi = np.array([])
+    x = np.array([1])
+    with pytest.raises(ValueError):
+        akima_interpolate(xi, yi, x)
+
+def test_akima_interpolate_derivative_case():
+    xi = np.array([0, 1, 2])
+    yi = np.array([0, 1, 0])
+    x = np.array([0.5])
+    expected_derivative = np.array([-1])
+    result = akima_interpolate(xi, yi, x, der=1)
+    np.testing.assert_almost_equal(result, expected_derivative)
+
+def test_akima_interpolate_multiple_derivatives():
+    xi = np.array([0, 1, 2])
+    yi = np.array([0, 1, 0])
+    x = np.array([0.5])
+    expected = np.array([-1, 0])  # First derivative and second derivative
+    result = akima_interpolate(xi, yi, x, der=[1, 2])
+    np.testing.assert_almost_equal(result, expected)
+
+def test_akima_interpolate_non_sorted_xi():
+    xi = np.array([3, 1, 2])
+    yi = np.array([0, 1, 0.5])
+    x = np.array([1.5])
+    with pytest.raises(ValueError):
+        akima_interpolate(xi, yi, x)
+```",success
+PY-068,functions\PY_068.py,"```python
+import pytest
+
+class DocSpan:
+    def __init__(self, start, length):
+        self.start = start
+        self.length = length
+
+def check_is_max_context(doc_spans, cur_span_index, position):
+    best_score = None
+    best_span_index = None
+    for (span_index, doc_span) in enumerate(doc_spans):
+        end = doc_span.start + doc_span.length - 1
+        if position < doc_span.start:
+            continue
+        if position > end:
+            continue
+        num_left_context = position - doc_span.start
+        num_right_context = end - position
+        score = min(num_left_context, num_right_context) + 0.01 * doc_span.length
+        if best_score is None or score > best_score:
+            best_score = score
+            best_span_index = span_index
+    return cur_span_index == best_span_index
+
+def test_check_is_max_context():
+    # Normal test cases
+    assert check_is_max_context([DocSpan(0, 5), DocSpan(5, 5)], 0, 2) == True
+    assert check_is_max_context([DocSpan(0, 5), DocSpan(5, 5)], 1, 7) == True
+    assert check_is_max_context([DocSpan(0, 5), DocSpan(5, 5)], 0, 4) == False
+
+    # Boundary test cases
+    assert check_is_max_context([DocSpan(0, 5)], 0, 0) == True
+    assert check_is_max_context([DocSpan(0, 5)], 0, 4) == True
+    assert check_is_max_context([DocSpan(0, 5)], 0, 5) == False  # position is out of bounds
+
+    # Edge cases
+    assert check_is_max_context([], 0, 0) == False  # No spans
+    assert check_is_max_context([DocSpan(0, 1)], 0, 0) == True  # Single span, position at start
+    assert check_is_max_context([DocSpan(0, 1)], 0, 1) == False  # Single span, position at end
+    assert check_is_max_context([DocSpan(0, 10), DocSpan(10, 10)], 1, 15) == True  # Multiple spans, max context
+    assert check_is_max_context([DocSpan(0, 10), DocSpan(10, 10)], 0, 5) == False  # Multiple spans, not max context
+```",success
+PY-069,functions\PY_069.py,"```python
+import pytest
+from unittest.mock import MagicMock
+
+def test_apply_axis_properties_rotation():
+    axis = MagicMock()
+    axis.get_majorticklabels.return_value = [MagicMock(), MagicMock()]
+    axis.get_minorticklabels.return_value = [MagicMock()]
+
+    apply_axis_properties(axis, rot=45)
+
+    for label in axis.get_majorticklabels() + axis.get_minorticklabels():
+        label.set_rotation.assert_called_with(45)
+
+def test_apply_axis_properties_fontsize():
+    axis = MagicMock()
+    axis.get_majorticklabels.return_value = [MagicMock(), MagicMock()]
+    axis.get_minorticklabels.return_value = [MagicMock()]
+
+    apply_axis_properties(axis, fontsize=12)
+
+    for label in axis.get_majorticklabels() + axis.get_minorticklabels():
+        label.set_fontsize.assert_called_with(12)
+
+def test_apply_axis_properties_both():
+    axis = MagicMock()
+    axis.get_majorticklabels.return_value = [MagicMock(), MagicMock()]
+    axis.get_minorticklabels.return_value = [MagicMock()]
+
+    apply_axis_properties(axis, rot=90, fontsize=10)
+
+    for label in axis.get_majorticklabels() + axis.get_minorticklabels():
+        label.set_rotation.assert_called_with(90)
+        label.set_fontsize.assert_called_with(10)
+
+def test_apply_axis_properties_no_changes():
+    axis = MagicMock()
+    axis.get_majorticklabels.return_value = [MagicMock(), MagicMock()]
+    axis.get_minorticklabels.return_value = [MagicMock()]
+
+    apply_axis_properties(axis)
+
+    for label in axis.get_majorticklabels() + axis.get_minorticklabels():
+        label.set_rotation.assert_not_called()
+        label.set_fontsize.assert_not_called()
+
+def test_apply_axis_properties_zero_rotation():
+    axis = MagicMock()
+    axis.get_majorticklabels.return_value = [MagicMock(), MagicMock()]
+    axis.get_minorticklabels.return_value = [MagicMock()]
+
+    apply_axis_properties(axis, rot=0)
+
+    for label in axis.get_majorticklabels() + axis.get_minorticklabels():
+        label.set_rotation.assert_called_with(0)
+
+def test_apply_axis_properties_large_fontsize():
+    axis = MagicMock()
+    axis.get_majorticklabels.return_value = [MagicMock(), MagicMock()]
+    axis.get_minorticklabels.return_value = [MagicMock()]
+
+    apply_axis_properties(axis, fontsize=100)
+
+    for label in axis.get_majorticklabels() + axis.get_minorticklabels():
+        label.set_fontsize.assert_called_with(100)
+
+def test_apply_axis_properties_negative_rotation():
+    axis = MagicMock()
+    axis.get_majorticklabels.return_value = [MagicMock(), MagicMock()]
+    axis.get_minorticklabels.return_value = [MagicMock()]
+
+    apply_axis_properties(axis, rot=-45)
+
+    for label in axis.get_majorticklabels() + axis.get_minorticklabels():
+        label.set_rotation.assert_called_with(-45)
+```",success
+PY-070,functions\PY_070.py,"```python
+import pytest
+
+def test_construction_error_normal_cases():
+    with pytest.raises(ValueError, match=""Shape of passed values is (3, 2), indices imply (3, 2)""):
+        construction_error(3, (2, 3), [(0, 1), (1, 2), (2, 3)])
+    
+    with pytest.raises(ValueError, match=""Shape of passed values is (4, 3), indices imply (4, 3)""):
+        construction_error(4, (3, 4), [(0, 1), (1, 2), (2, 3), (3, 4)])
+
+def test_construction_error_boundary_cases():
+    with pytest.raises(ValueError, match=""Empty data passed with indices specified.""):
+        construction_error(0, (0, 0), [])
+    
+    with pytest.raises(ValueError, match=""Shape of passed values is (1, 0), indices imply (0, 1)""):
+        construction_error(1, (0, 1), [0])
+
+def test_construction_error_edge_cases():
+    with pytest.raises(ValueError, match=""Shape of passed values is (1,), indices imply (1,)""):
+        construction_error(1, (1,), [(0,)])
+    
+    with pytest.raises(ValueError, match=""Shape of passed values is (2, 1), indices imply (1, 2)""):
+        construction_error(2, (1, 2), [(0,), (1,)])
+
+    with pytest.raises(ValueError, match=""Shape of passed values is (0,), indices imply (0,)""):
+        construction_error(0, (0,), [])
+    
+    with pytest.raises(ValueError, match=""Shape of passed values is (2, 2), indices imply (2, 2)""):
+        construction_error(2, (2, 2), [(0, 1), (1, 0)])
+```",success
+PY-071,functions\PY_071.py,"```python
+import pytest
+
+class DummySkeletonClass:
+    def __init__(self):
+        self.attributes = {}
+    
+    def __setattr__(self, name, value):
+        if name != 'attributes':
+            self.attributes[name] = value
+    
+    def register(self, subclass):
+        if 'subclasses' not in self.attributes:
+            self.attributes['subclasses'] = []
+        self.attributes['subclasses'].append(subclass)
+
+def test_rehydrate_skeleton_class_normal():
+    skeleton = DummySkeletonClass()
+    class_dict = {'attr1': 'value1', 'attr2': 'value2'}
+    rehydrate_skeleton_class(skeleton, class_dict)
+    assert skeleton.attributes['attr1'] == 'value1'
+    assert skeleton.attributes['attr2'] == 'value2'
+
+def test_rehydrate_skeleton_class_with_registry():
+    skeleton = DummySkeletonClass()
+    class_dict = {
+        'attr1': 'value1',
+        '_abc_impl': ['subclass1', 'subclass2']
+    }
+    rehydrate_skeleton_class(skeleton, class_dict)
+    assert skeleton.attributes['attr1'] == 'value1'
+    assert 'subclass1' in skeleton.attributes['subclasses']
+    assert 'subclass2' in skeleton.attributes['subclasses']
+
+def test_rehydrate_skeleton_class_empty_dict():
+    skeleton = DummySkeletonClass()
+    class_dict = {}
+    rehydrate_skeleton_class(skeleton, class_dict)
+    assert skeleton.attributes == {}
+
+def test_rehydrate_skeleton_class_boundary():
+    skeleton = DummySkeletonClass()
+    class_dict = {'_abc_impl': []}
+    rehydrate_skeleton_class(skeleton, class_dict)
+    assert 'subclasses' not in skeleton.attributes
+
+def test_rehydrate_skeleton_class_edge_case():
+    skeleton = DummySkeletonClass()
+    class_dict = {'_abc_impl': None}
+    rehydrate_skeleton_class(skeleton, class_dict)
+    assert 'subclasses' not in skeleton.attributes
+
+def test_rehydrate_skeleton_class_with_none_values():
+    skeleton = DummySkeletonClass()
+    class_dict = {'attr1': None, 'attr2': None}
+    rehydrate_skeleton_class(skeleton, class_dict)
+    assert skeleton.attributes['attr1'] is None
+    assert skeleton.attributes['attr2'] is None
+```",success
+PY-072,functions\PY_072.py,"```python
+import pytest
+
+class TestStartFunction:
+    def test_start_with_default_parameters(self):
+        result = self.start()
+        assert result is not None
+        assert result.isActive is False
+
+    def test_start_with_path(self):
+        result = self.start(path='/some/path')
+        assert result is not None
+        assert result.isActive is False
+
+    def test_start_with_format(self):
+        result = self.start(format='json')
+        assert result is not None
+        assert result.isActive is False
+
+    def test_start_with_output_mode_append(self):
+        result = self.start(outputMode='append')
+        assert result is not None
+        assert result.isActive is False
+
+    def test_start_with_output_mode_complete(self):
+        result = self.start(outputMode='complete')
+        assert result is not None
+        assert result.isActive is False
+
+    def test_start_with_output_mode_update(self):
+        result = self.start(outputMode='update')
+        assert result is not None
+        assert result.isActive is False
+
+    def test_start_with_partition_by(self):
+        result = self.start(partitionBy=['column1', 'column2'])
+        assert result is not None
+        assert result.isActive is False
+
+    def test_start_with_query_name(self):
+        result = self.start(queryName='test_query')
+        assert result is not None
+        assert result.isActive is False
+
+    def test_start_with_all_parameters(self):
+        result = self.start(path='/some/path', format='parquet', outputMode='append', 
+                            partitionBy=['column1'], queryName='test_query')
+        assert result is not None
+        assert result.isActive is False
+
+    def test_start_with_none_path(self):
+        result = self.start(path=None)
+        assert result is not None
+        assert result.isActive is False
+
+    def test_start_with_empty_string_path(self):
+        result = self.start(path='')
+        assert result is not None
+        assert result.isActive is False
+
+    def test_start_with_invalid_output_mode(self):
+        with pytest.raises(ValueError):
+            self.start(outputMode='invalid_mode')
+
+    def test_start_with_large_partition_by(self):
+        result = self.start(partitionBy=['col' + str(i) for i in range(1000)])
+        assert result is not None
+        assert result.isActive is False
+
+    def test_start_with_special_characters_in_query_name(self):
+        result = self.start(queryName='test_query_!@#$%^&*()')
+        assert result is not None
+        assert result.isActive is False
+```",success
+PY-073,functions\PY_073.py,"```python
+import pytest
+
+def trim_front(strings):
+    trimmed = strings
+    while len(strings) > 0 and all(x[0] == ' ' for x in trimmed):
+        trimmed = [x[1:] for x in trimmed]
+    return trimmed
+
+def test_trim_front_normal_cases():
+    assert trim_front(['  hello', '  world']) == ['hello', 'world']
+    assert trim_front(['   test', '   case']) == ['test', 'case']
+    assert trim_front(['   leading spaces', '   another one']) == ['leading spaces', 'another one']
+    assert trim_front(['no spaces', 'here']) == ['no spaces', 'here']
+
+def test_trim_front_boundary_cases():
+    assert trim_front(['   ']) == ['']
+    assert trim_front(['']) == ['']
+    assert trim_front(['   ', '   ']) == ['', '']
+    assert trim_front(['  a', '  b', '  c']) == ['a', 'b', 'c']
+
+def test_trim_front_edge_cases():
+    assert trim_front([]) == []
+    assert trim_front(['   1', '   2', '   3']) == ['1', '2', '3']
+    assert trim_front(['  ', '  ', '  ']) == ['', '', '']
+    assert trim_front(['  0.0', '  1.1', '  2.2']) == ['0.0', '1.1', '2.2']
+    assert trim_front(['   0', '   0.0', '   0.00']) == ['0', '0.0', '0.00']
+```",success
+PY-074,functions\PY_074.py,"```python
+import pytest
+from pandas import BlockManager
+
+# Assuming the function extend_blocks is imported from the module where it's defined
+
+def test_extend_blocks_with_none():
+    assert extend_blocks(None) == []
+
+def test_extend_blocks_with_empty_list():
+    assert extend_blocks([]) == []
+
+def test_extend_blocks_with_single_element():
+    assert extend_blocks(1) == [1]
+
+def test_extend_blocks_with_list_of_integers():
+    assert extend_blocks([1, 2, 3]) == [1, 2, 3]
+
+def test_extend_blocks_with_nested_list():
+    assert extend_blocks([[1, 2], [3, 4]]) == [1, 2, 3, 4]
+
+def test_extend_blocks_with_block_manager():
+    block_manager = BlockManager([1, 2, 3])
+    assert extend_blocks(block_manager) == [1, 2, 3]
+
+def test_extend_blocks_with_mixed_types():
+    assert extend_blocks([1, ""string"", 3.5]) == [1, ""string"", 3.5]
+
+def test_extend_blocks_with_none_in_list():
+    assert extend_blocks([1, None, 3]) == [1, None, 3]
+
+def test_extend_blocks_with_large_list():
+    large_list = list(range(1000))
+    assert extend_blocks(large_list) == large_list
+
+def test_extend_blocks_with_empty_block_manager():
+    empty_block_manager = BlockManager([])
+    assert extend_blocks(empty_block_manager) == []
+
+def test_extend_blocks_with_multiple_types_in_block_manager():
+    block_manager = BlockManager([1, ""text"", 3.14])
+    assert extend_blocks(block_manager) == [1, ""text"", 3.14]
+```",success
+PY-075,functions\PY_075.py,"```python
+import pytest
+
+class TestGetCorpusLine:
+    class MockCorpus:
+        def __init__(self, corpus_lines, on_memory, all_docs, sample_to_doc):
+            self.corpus_lines = corpus_lines
+            self.on_memory = on_memory
+            self.all_docs = all_docs
+            self.sample_to_doc = sample_to_doc
+            self.line_buffer = None
+            self.current_doc = 0
+
+        def get_corpus_line(self, item):
+            # Function implementation here...
+
+    def test_normal_case_on_memory(self):
+        all_docs = {
+            0: [""line1_doc0"", ""line2_doc0""],
+            1: [""line1_doc1"", ""line2_doc1""]
+        }
+        sample_to_doc = [{ ""doc_id"": 0, ""line"": 0 }, { ""doc_id"": 1, ""line"": 0 }]
+        corpus = self.MockCorpus(2, True, all_docs, sample_to_doc)
+        assert corpus.get_corpus_line(0) == (""line1_doc0"", ""line2_doc0"")
+        assert corpus.get_corpus_line(1) == (""line1_doc1"", ""line2_doc1"")
+
+    def test_normal_case_not_on_memory(self):
+        all_docs = {
+            0: [""line1_doc0"", ""line2_doc0""],
+            1: [""line1_doc1"", ""line2_doc1""]
+        }
+        corpus = self.MockCorpus(2, False, all_docs, [])
+        corpus.file = iter([""line1_doc0"", ""line2_doc0"", ""line1_doc1"", ""line2_doc1""])
+        assert corpus.get_corpus_line(0) == (""line1_doc0"", ""line2_doc0"")
+        assert corpus.get_corpus_line(1) == (""line1_doc1"", ""line2_doc1"")
+
+    def test_boundary_case(self):
+        all_docs = {
+            0: [""line1_doc0"", ""line2_doc0""],
+        }
+        sample_to_doc = [{ ""doc_id"": 0, ""line"": 0 }]
+        corpus = self.MockCorpus(1, True, all_docs, sample_to_doc)
+        assert corpus.get_corpus_line(0) == (""line1_doc0"", ""line2_doc0"")
+
+    def test_edge_case_empty_lines(self):
+        all_docs = {
+            0: ["""", ""line2_doc0""],
+            1: [""line1_doc1"", """"]
+        }
+        sample_to_doc = [{ ""doc_id"": 0, ""line"": 0 }, { ""doc_id"": 1, ""line"": 0 }]
+        corpus = self.MockCorpus(2, True, all_docs, sample_to_doc)
+        assert corpus.get_corpus_line(0) == ("""", ""line2_doc0"")
+        assert corpus.get_corpus_line(1) == (""line1_doc1"", """")
+
+    def test_out_of_bounds(self):
+        all_docs = {
+            0: [""line1_doc0"", ""line2_doc0""],
+        }
+        sample_to_doc = [{ ""doc_id"": 0, ""line"": 0 }]
+        corpus = self.MockCorpus(1, True, all_docs, sample_to_doc)
+        with pytest.raises(AssertionError):
+            corpus.get_corpus_line(1)
+
+    def test_empty_corpus(self):
+        all_docs = {}
+        sample_to_doc = []
+        corpus = self.MockCorpus(0, True, all_docs, sample_to_doc)
+        with pytest.raises(AssertionError):
+            corpus.get_corpus_line(0)
+```",success
+PY-076,functions\PY_076.py,"```python
+import pytest
+
+def preprocess_sgm(line, is_sgm):
+    """"""Preprocessing to strip tags in SGM files.""""""
+    if not is_sgm:
+        return line
+    if line.startswith(""<srcset"") or line.startswith(""</srcset""):
+        return """"
+    if line.startswith(""<doc"") or line.startswith(""</doc""):
+        return """"
+    if line.startswith(""<p>"") or line.startswith(""</p>""):
+        return """"
+    line = line.strip()
+    if line.startswith(""<seg"") and line.endswith(""</seg>""):
+        i = line.index("">"")
+        return line[i + 1:-6]
+
+# Test cases
+def test_preprocess_sgm_normal_cases():
+    assert preprocess_sgm(""<srcset ...>"", True) == """"
+    assert preprocess_sgm(""</srcset>"", True) == """"
+    assert preprocess_sgm(""<doc ...>"", True) == """"
+    assert preprocess_sgm(""</doc>"", True) == """"
+    assert preprocess_sgm(""<p>"", True) == """"
+    assert preprocess_sgm(""</p>"", True) == """"
+    assert preprocess_sgm(""<seg>content</seg>"", True) == ""content""
+    assert preprocess_sgm(""Some normal text"", False) == ""Some normal text""
+
+def test_preprocess_sgm_boundary_cases():
+    assert preprocess_sgm(""<seg></seg>"", True) == """"
+    assert preprocess_sgm(""<seg> </seg>"", True) == """"
+    assert preprocess_sgm(""<seg>  content  </seg>"", True) == ""  content  ""
+    assert preprocess_sgm(""<seg>content</seg>"", True) == ""content""
+
+def test_preprocess_sgm_edge_cases():
+    assert preprocess_sgm("""", True) == """"
+    assert preprocess_sgm("""", False) == """"
+    assert preprocess_sgm(""   "", True) == """"
+    assert preprocess_sgm(""   "", False) == ""   ""
+    assert preprocess_sgm(""<seg>content</seg> more text"", True) == ""content</seg> more text""
+    assert preprocess_sgm(""<seg>content</seg> <p>"", True) == ""content</seg> <p>""
+```",success
+PY-077,functions\PY_077.py,"```python
+import pytest
+
+class ProxyManager:
+    def __init__(self, proxyType, autodetect=False, ftpProxy=None, httpProxy=None, 
+                 proxyAutoconfigUrl=None, sslProxy=None, noProxy=None, 
+                 socksProxy=None, socksUsername=None, socksPassword=None):
+        self.proxyType = {'string': proxyType}
+        self.autodetect = autodetect
+        self.ftpProxy = ftpProxy
+        self.httpProxy = httpProxy
+        self.proxyAutoconfigUrl = proxyAutoconfigUrl
+        self.sslProxy = sslProxy
+        self.noProxy = noProxy
+        self.socksProxy = socksProxy
+        self.socksUsername = socksUsername
+        self.socksPassword = socksPassword
+
+    def add_to_capabilities(self, capabilities):
+        proxy_caps = {}
+        proxy_caps['proxyType'] = self.proxyType['string']
+
+        if self.autodetect:
+            proxy_caps['autodetect'] = self.autodetect
+        if self.ftpProxy:
+            proxy_caps['ftpProxy'] = self.ftpProxy
+        if self.httpProxy:
+            proxy_caps['httpProxy'] = self.httpProxy
+        if self.proxyAutoconfigUrl:
+            proxy_caps['proxyAutoconfigUrl'] = self.proxyAutoconfigUrl
+        if self.sslProxy:
+            proxy_caps['sslProxy'] = self.sslProxy
+        if self.noProxy:
+            proxy_caps['noProxy'] = self.noProxy
+        if self.socksProxy:
+            proxy_caps['socksProxy'] = self.socksProxy
+        if self.socksUsername:
+            proxy_caps['socksUsername'] = self.socksUsername
+        if self.socksPassword:
+            proxy_caps['socksPassword'] = self.socksPassword
+
+        capabilities['proxy'] = proxy_caps
+
+
+@pytest.fixture
+def capabilities():
+    return {}
+
+
+def test_add_to_capabilities_with_all_fields(capabilities):
+    manager = ProxyManager(
+        proxyType='manual',
+        autodetect=True,
+        ftpProxy='ftp://proxy.example.com',
+        httpProxy='http://proxy.example.com',
+        proxyAutoconfigUrl='http://proxy.pac',
+        sslProxy='https://proxy.example.com',
+        noProxy='localhost,127.0.0.1',
+        socksProxy='socks://proxy.example.com',
+        socksUsername='user',
+        socksPassword='pass'
+    )
+    manager.add_to_capabilities(capabilities)
+    assert capabilities['proxy'] == {
+        'proxyType': 'manual',
+        'autodetect': True,
+        'ftpProxy': 'ftp://proxy.example.com',
+        'httpProxy': 'http://proxy.example.com',
+        'proxyAutoconfigUrl': 'http://proxy.pac',
+        'sslProxy': 'https://proxy.example.com',
+        'noProxy': 'localhost,127.0.0.1',
+        'socksProxy': 'socks://proxy.example.com',
+        'socksUsername': 'user',
+        'socksPassword': 'pass'
+    }
+
+
+def test_add_to_capabilities_with_no_optional_fields(capabilities):
+    manager = ProxyManager(proxyType='manual')
+    manager.add_to_capabilities(capabilities)
+    assert capabilities['proxy'] == {
+        'proxyType': 'manual'
+    }
+
+
+def test_add_to_capabilities_with_only_autodetect(capabilities):
+    manager = ProxyManager(proxyType='manual', autodetect=True)
+    manager.add_to_capabilities(capabilities)
+    assert capabilities['proxy'] == {
+        'proxyType': 'manual',
+        'autodetect': True
+    }
+
+
+def test_add_to_capabilities_with_empty_capabilities(capabilities):
+    manager = ProxyManager(proxyType='manual')
+    manager.add_to_capabilities(capabilities)
+    assert capabilities == {'proxy': {'proxyType': 'manual'}}
+
+
+def test_add_to_capabilities_with_none_values(capabilities):
+    manager = ProxyManager(
+        proxyType='manual',
+        ftpProxy=None,
+        httpProxy=None,
+        proxyAutoconfigUrl=None,
+        sslProxy=None,
+        noProxy=None,
+        socksProxy=None,
+        socksUsername=None,
+        socksPassword=None
+    )
+    manager.add_to_capabilities(capabilities)
+    assert capabilities['proxy'] == {
+        'proxyType': 'manual'
+    }
+```",success
+PY-078,functions\PY_078.py,"```python
+import pytest
+
+class MockBlock:
+    def __init__(self, block_type, is_extension=False, ndim=1):
+        self.block_type = block_type
+        self.is_extension = is_extension
+        self.ndim = ndim
+
+class MockJoinUnit:
+    def __init__(self, block, is_na=False, indexers=None):
+        self.block = block
+        self.is_na = is_na
+        self.indexers = indexers or []
+
+def test_is_uniform_join_units_normal_cases():
+    # Normal case with uniform blocks
+    ju1 = MockJoinUnit(MockBlock(int), is_na=False)
+    ju2 = MockJoinUnit(MockBlock(int), is_na=False)
+    assert is_uniform_join_units([ju1, ju2]) is True
+
+    # Normal case with extension dtype
+    ju3 = MockJoinUnit(MockBlock(int, is_extension=True), is_na=True)
+    assert is_uniform_join_units([ju1, ju3]) is True
+
+def test_is_uniform_join_units_boundary_cases():
+    # Boundary case with two uniform blocks
+    ju4 = MockJoinUnit(MockBlock(float), is_na=False)
+    assert is_uniform_join_units([ju1, ju4]) is False  # Different types
+
+    # Boundary case with one block (should return False)
+    assert is_uniform_join_units([ju1]) is False
+
+def test_is_uniform_join_units_edge_cases():
+    # Edge case with missing values and non-extension dtype
+    ju5 = MockJoinUnit(MockBlock(int), is_na=True)
+    assert is_uniform_join_units([ju1, ju5]) is False  # Missing value not allowed
+
+    # Edge case with indexers present
+    ju6 = MockJoinUnit(MockBlock(int), is_na=False, indexers=[1])
+    assert is_uniform_join_units([ju1, ju6]) is False  # Indexers present
+
+    # Edge case with Panel (3D block)
+    ju7 = MockJoinUnit(MockBlock(int, ndim=3), is_na=False)
+    assert is_uniform_join_units([ju1, ju7]) is False  # Panel not allowed
+
+    # Edge case with empty list
+    assert is_uniform_join_units([]) is False  # No blocks to concatenate
+```",success
+PY-079,functions\PY_079.py,"```python
+import pytest
+
+from your_module import factorial  # Replace 'your_module' with the actual module name
+
+def test_factorial_normal_cases():
+    assert factorial(0) == 1
+    assert factorial(1) == 1
+    assert factorial(5) == 120
+    assert factorial(10) == 3628800
+
+def test_factorial_with_mod():
+    assert factorial(5, mod=7) == 1
+    assert factorial(10, mod=100) == 80
+    assert factorial(6, mod=5) == 0
+
+def test_factorial_boundary_cases():
+    assert factorial(2) == 2
+    assert factorial(3) == 6
+    assert factorial(4) == 24
+
+def test_factorial_edge_cases():
+    assert factorial(0, mod=1) == 0
+    assert factorial(1, mod=1) == 0
+    assert factorial(5, mod=1) == 0
+
+def test_factorial_invalid_inputs():
+    with pytest.raises(ValueError):
+        factorial(-1)
+    with pytest.raises(ValueError):
+        factorial(5, mod=-1)
+    with pytest.raises(ValueError):
+        factorial(5, mod=0)
+    with pytest.raises(ValueError):
+        factorial(5.5)
+    with pytest.raises(ValueError):
+        factorial(""string"")
+```",success
+PY-080,functions\PY_080.py,"```python
+import pytest
+
+def three_sum(array):
+    res = set()
+    array.sort()
+    for i in range(len(array) - 2):
+        if i > 0 and array[i] == array[i - 1]:
+            continue
+        l, r = i + 1, len(array) - 1
+        while l < r:
+            s = array[i] + array[l] + array[r]
+            if s > 0:
+                r -= 1
+            elif s < 0:
+                l += 1
+            else:
+                res.add((array[i], array[l], array[r]))
+                while l < r and array[l] == array[l + 1]:
+                    l += 1
+                while l < r and array[r] == array[r - 1]:
+                    r -= 1
+                l += 1
+                r -= 1
+    return res
+
+def test_three_sum_normal_cases():
+    assert three_sum([-1, 0, 1, 2, -1, -4]) == {(-1, -1, 2), (-1, 0, 1)}
+    assert three_sum([0, 0, 0]) == {(0, 0, 0)}
+    assert three_sum([1, 2, -2, -1]) == set()
+
+def test_three_sum_boundary_cases():
+    assert three_sum([]) == set()
+    assert three_sum([1]) == set()
+    assert three_sum([1, 2]) == set()
+    assert three_sum([0, 0, 0, 0]) == {(0, 0, 0)}
+
+def test_three_sum_edge_cases():
+    assert three_sum([-1, 0, 1]) == {(-1, 0, 1)}
+    assert three_sum([-1, -1, 2, 2, 0]) == {(-1, 0, 1), (-1, -1, 2)}
+    assert three_sum([3, -2, 1, 0, -1]) == {(-2, 1, 1), (-1, 0, 1)}
+    assert three_sum([-2, 0, 1, 1, 2]) == {(-2, 1, 1)}
+```",success
+PY-081,functions\PY_081.py,"```python
+import pytest
+
+class TestTrigger:
+    def setup_method(self):
+        self.mock_spark = type('MockSpark', (), {
+            '_sc': type('MockSc', (), {
+                '_jvm': type('MockJvm', (), {
+                    'org': type('MockOrg', (), {
+                        'apache': type('MockApache', (), {
+                            'spark': type('MockSpark', (), {
+                                'sql': type('MockSql', (), {
+                                    'streaming': type('MockStreaming', (), {
+                                        'Trigger': type('MockTrigger', (), {
+                                            'ProcessingTime': lambda x: f'ProcessingTime({x})',
+                                            'Once': lambda: 'Once()',
+                                            'Continuous': lambda x: f'Continuous({x})'
+                                        })()
+                                    })()
+                                })()
+                            })()
+                        })()
+                    })()
+                })()
+            })()
+        })()
+        
+        self.writer = type('MockWriter', (), {
+            'trigger': lambda self, jTrigger: self
+        })()
+        
+        self.writer._spark = self.mock_spark
+        self.writer._jwrite = self.writer
+
+    def test_trigger_processing_time(self):
+        result = self.writer.trigger(processingTime='5 seconds')
+        assert result == self.writer
+
+    def test_trigger_once(self):
+        result = self.writer.trigger(once=True)
+        assert result == self.writer
+
+    def test_trigger_continuous(self):
+        result = self.writer.trigger(continuous='5 seconds')
+        assert result == self.writer
+
+    def test_no_trigger(self):
+        with pytest.raises(ValueError, match='No trigger provided'):
+            self.writer.trigger()
+
+    def test_multiple_triggers(self):
+        with pytest.raises(ValueError, match='Multiple triggers not allowed.'):
+            self.writer.trigger(processingTime='5 seconds', once=True)
+
+    def test_invalid_processing_time_type(self):
+        with pytest.raises(ValueError, match='Value for processingTime must be a non empty string. Got: 123'):
+            self.writer.trigger(processingTime=123)
+
+    def test_empty_processing_time(self):
+        with pytest.raises(ValueError, match='Value for processingTime must be a non empty string. Got:'):
+            self.writer.trigger(processingTime='')
+
+    def test_invalid_once_value(self):
+        with pytest.raises(ValueError, match='Value for once must be True. Got: False'):
+            self.writer.trigger(once=False)
+
+    def test_invalid_continuous_type(self):
+        with pytest.raises(ValueError, match='Value for continuous must be a non empty string. Got: 123'):
+            self.writer.trigger(continuous=123)
+
+    def test_empty_continuous(self):
+        with pytest.raises(ValueError, match='Value for continuous must be a non empty string. Got:'):
+            self.writer.trigger(continuous='')
+```",success
+PY-082,functions\PY_082.py,"```python
+import pytest
+
+class TestProcessNestedExpression:
+    def setup_method(self):
+        self.processor = YourClass()  # Replace with the actual class name containing the method
+
+    def test_single_leaf_expression(self):
+        result = self.processor.process_nested_expression(['a'])
+        assert result == '(a)'
+
+    def test_simple_nested_expression(self):
+        result = self.processor.process_nested_expression(['and', 'a', 'b'])
+        assert result == '(and (a) (b))'
+
+    def test_complex_nested_expression(self):
+        result = self.processor.process_nested_expression(['or', ['not', 'a'], 'b'])
+        assert result == '(or (not (a)) (b))'
+
+    def test_lambda_expression(self):
+        result = self.processor.process_nested_expression(['\\', 'x', 'a'])
+        assert result == '(\\ x (a))'
+
+    def test_nested_lambda_expression(self):
+        result = self.processor.process_nested_expression(['\\', 'x', ['and', 'a', 'b']])
+        assert result == '(\\ x (and (a) (b)))'
+
+    def test_empty_list(self):
+        result = self.processor.process_nested_expression([])
+        assert result == ''
+
+    def test_single_nested_list(self):
+        result = self.processor.process_nested_expression([['a']])
+        assert result == '(a)'
+
+    def test_multiple_nested_lists(self):
+        result = self.processor.process_nested_expression([['a'], ['b']])
+        assert result == '((a) (b))'
+
+    def test_mixed_expression(self):
+        result = self.processor.process_nested_expression(['and', ['or', 'a', 'b'], 'c'])
+        assert result == '(and (or (a) (b)) (c))'
+
+    def test_deeply_nested_expression(self):
+        result = self.processor.process_nested_expression(['and', ['or', ['not', 'a'], 'b'], 'c'])
+        assert result == '(and (or (not (a)) (b)) (c))'
+
+    def test_boundary_case_with_large_input(self):
+        result = self.processor.process_nested_expression(['and'] + ['a'] * 1000)
+        assert result == '(and ' + ' '.join(['(a)'] * 1000) + ')'
+
+    def test_edge_case_with_lambda_and_multiple_args(self):
+        result = self.processor.process_nested_expression(['\\', 'x', 'y', 'z'])
+        assert result == '(\\ x (y) (z))'
+```",success
+PY-083,functions\PY_083.py,"```python
+import pytest
+
+class TestBindFunction:
+    def setup_method(self):
+        self.module = YourModuleClass()  # Replace with the actual class name
+        self.module._data_names = ['data1', 'data2']
+        self.module._label_names = ['label1']
+        self.module.binded = False
+
+    def test_normal_case(self):
+        data_shapes = [('data1', (3, 224, 224)), ('data2', (3, 224, 224))]
+        label_shapes = [('label1', (1,))]
+        self.module.bind(data_shapes, label_shapes)
+        assert self.module._data_shapes == data_shapes
+        assert self.module._label_shapes == label_shapes
+
+    def test_no_label_shapes(self):
+        data_shapes = [('data1', (3, 224, 224)), ('data2', (3, 224, 224))]
+        self.module.bind(data_shapes)
+        assert self.module._data_shapes == data_shapes
+        assert self.module._label_shapes is None
+
+    def test_force_rebind(self):
+        self.module.binded = True
+        data_shapes = [('data1', (3, 224, 224)), ('data2', (3, 224, 224))]
+        self.module.bind(data_shapes, force_rebind=True)
+        assert self.module._data_shapes == data_shapes
+
+    def test_grad_req_write(self):
+        data_shapes = [('data1', (3, 224, 224)), ('data2', (3, 224, 224))]
+        self.module.bind(data_shapes, grad_req='write')
+        assert self.module.for_training is True
+
+    def test_grad_req_invalid(self):
+        data_shapes = [('data1', (3, 224, 224)), ('data2', (3, 224, 224))]
+        with pytest.raises(AssertionError, match=""Python module only support write gradient""):
+            self.module.bind(data_shapes, grad_req='add')
+
+    def test_boundary_case_empty_data_shapes(self):
+        data_shapes = []
+        label_shapes = []
+        self.module.bind(data_shapes, label_shapes)
+        assert self.module._data_shapes == data_shapes
+        assert self.module._label_shapes == label_shapes
+
+    def test_boundary_case_single_data_shape(self):
+        data_shapes = [('data1', (3, 224, 224))]
+        label_shapes = [('label1', (1,))]
+        self.module.bind(data_shapes, label_shapes)
+        assert self.module._data_shapes == data_shapes
+        assert self.module._label_shapes == label_shapes
+
+    def test_edge_case_mismatched_data_names(self):
+        data_shapes = [('data1', (3, 224, 224)), ('data3', (3, 224, 224))]
+        with pytest.raises(AssertionError):
+            self.module.bind(data_shapes)
+
+    def test_edge_case_mismatched_label_names(self):
+        data_shapes = [('data1', (3, 224, 224)), ('data2', (3, 224, 224))]
+        label_shapes = [('label2', (1,))]
+        with pytest.raises(AssertionError):
+            self.module.bind(data_shapes, label_shapes)
+```",success
