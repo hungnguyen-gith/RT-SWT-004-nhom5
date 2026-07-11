@@ -1,11 +1,10 @@
-def get_centroids(self):
-        """Method to return a list of Numpy arrays containing the centroids' fingerprints"""
-        if self.first_call:
-            raise ValueError('The model has not been fitted yet.')
-        
-        centroids = []
-        for leaf in self._get_leaves():
-            for subcluster in leaf.subclusters_:
-                centroids.append(subcluster.centroid_)
-
-        return centroids
+def setExecutorEnv(self, key=None, value=None, pairs=None):
+        """Set an environment variable to be passed to executors."""
+        if (key is not None and pairs is not None) or (key is None and pairs is None):
+            raise Exception("Either pass one key-value pair or a list of pairs")
+        elif key is not None:
+            self.set("spark.executorEnv." + key, value)
+        elif pairs is not None:
+            for (k, v) in pairs:
+                self.set("spark.executorEnv." + k, v)
+        return self

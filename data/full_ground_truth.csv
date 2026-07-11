@@ -1,78 +1,136 @@
 function_id,language,cc_band,cc_value,source_code,annotator_dg,annotator_rw,final_label,notes
-PY-005,python,CC5-8,7,"def get_centroids_mol_ids(self):
-        """"""Method to return a dictionary containing the centroids and mol indices of the leaves""""""
-        if self.first_call:
-            raise ValueError('The model has not been fitted yet.')
-        
-        centroids = []
-        mol_ids = []
-        for leaf in self._get_leaves():
-            for subcluster in leaf.subclusters_:
-                centroids.append(subcluster.centroid_)
-                mol_ids.append(subcluster.mol_indices)
+PY-005,python,CC5-8,5,"def take(self, num):
+        """"""
+        Take the first num elements of the RDD.
 
-        dict_centroids_mol_ids = {'centroids': centroids, 'mol_ids': mol_ids}
+        It works by first scanning one partition, and use the results from
+        that partition to estimate the number of additional partitions needed
+        to satisfy the limit.
 
-        return dict_centroids_mol_ids",Maintainable,Maintainable,Maintainable,
-PY-006,python,CC5-8,6,"def get_centroids(self):
-        """"""Method to return a list of Numpy arrays containing the centroids' fingerprints""""""
-        if self.first_call:
-            raise ValueError('The model has not been fitted yet.')
-        
-        centroids = []
-        for leaf in self._get_leaves():
-            for subcluster in leaf.subclusters_:
-                centroids.append(subcluster.centroid_)
+        Translated from the Scala implementation in RDD#take().
 
-        return centroids",Hard,Hard,Hard,
-PY-007,python,CC5-8,6,"def get_cluster_mol_ids(self):
-        """"""Method to return the indices of molecules in each cluster""""""
-        if self.first_call:
-            raise ValueError('The model has not been fitted yet.')
-        
-        clusters_mol_id = []
-        for leaf in self._get_leaves():
-            for subcluster in leaf.subclusters_:
-                clusters_mol_id.append(subcluster.mol_indices)
+        .. note:: this method should only be used if the resulting array is expected
+            to be small, as all the data is loaded into the driver's memory.
 
-        # Sort the clusters by the number of samples in the cluster
-        clusters_mol_id = sorted(clusters_mol_id, key = lambda x: len(x), reverse = True)
+        >>> sc.parallelize([2, 3, 4, 5, 6]).cache().take(2)
+        [2, 3]
+        >>> sc.parallelize([2, 3, 4, 5, 6]).take(10)
+        [2, 3, 4, 5, 6]
+        >>> sc.parallelize(range(100), 100).filter(lambda x: x > 90).take(3)
+        [91, 92, 93]
+        """"""
+        items = []
+        totalParts = self.getNumPartitions()
+        partsScanned = 0
 
-        return clusters_mol_id",Maintainable,Maintainable,Maintainable,
-PY-008,python,CC5-8,6,"def get_BFs(self):
-        """"""Method to return the BitFeatures of the leaves""""""
-        if self.first_call:
-            raise ValueError('The model has not been fitted yet.')
-        
-        BFs = []
-        for leaf in self._get_leaves():
-            for subcluster in leaf.subclusters_:
-                BFs.append(subcluster)
+        while len(items) < num and partsScanned < totalParts:
+            # The number of partitions to try in this iteration.
+            # It is ok for this number to be greater than totalParts because
+            # we actually cap it at totalParts in runJob.
+            numPartsToTry = 1
+            if partsScanned > 0:
+                # If we didn't find any rows after the previous iteration,
+                # quadruple and retry.  Otherwise, interpolate the number of
+                # partitions we need to try, but overestimate it by 50%.
+                # We also cap the estimation in the end.
+                if len(items) == 0:
+                    numPartsToTry = partsScanned * 4
+                else:
+                    # the first parameter of max is >=1 whenever partsScanned >= 2
+                    numPartsToTry = int(1.5 * num * partsScanned / len(items)) - partsScanned
+                    numPartsToTry = min(max(numPartsToTry, 1), partsScanned * 4)
 
-        # Sort the BitFeatures by the number of samples in the cluster
-        BFs = sorted(BFs, key = lambda x: x.n_samples_, reverse = True)
+            left = num - len(items)
 
-        return BFs",Hard,Hard,Hard,
-PY-009,python,CC5-8,7,"import numpy as np
+            def takeUpToNumLeft(iterator):
+                iterator = iter(iterator)
+                taken = 0
+                while taken < left:
+                    try:
+                        yield next(iterator)
+                    except StopIteration:
+                        return
+                    taken += 1
 
+            p = range(partsScanned, min(partsScanned + numPartsToTry, totalParts))
+            res = self.context.runJob(self, takeUpToNumLeft, p)
 
-def prepare_data_BFs(self, fps, initial_mol = 0):
-        """"""Method to prepare the BitFeatures of the largest cluster and the rest of the clusters""""""
-        if self.first_call:
-            raise ValueError('The model has not been fitted yet.')
-        
-        BFs = self._get_BFs()
-        big, rest = BFs[0], BFs[1:]
+            items += res
+            partsScanned += numPartsToTry
 
-        data = []
-        for BF in rest:
-            data.append([BF.n_samples_, BF.linear_sum_.astype(np.int64), BF.mol_indices])
+        return items[:num]",,,PENDING_ANNOTATION,"Replaced (original CC computed on class/file, not isolated function - QA finding 2026-07-11) with take (source: https://github.com/apache/spark/blob/618d6bff71073c8c93501ab7392c3cc579730f0b/python/pyspark/rdd.py#L1308-L1367)"
+PY-006,python,CC5-8,8,"def setExecutorEnv(self, key=None, value=None, pairs=None):
+        """"""Set an environment variable to be passed to executors.""""""
+        if (key is not None and pairs is not None) or (key is None and pairs is None):
+            raise Exception(""Either pass one key-value pair or a list of pairs"")
+        elif key is not None:
+            self.set(""spark.executorEnv."" + key, value)
+        elif pairs is not None:
+            for (k, v) in pairs:
+                self.set(""spark.executorEnv."" + k, v)
+        return self",,,PENDING_ANNOTATION,"Replaced (original CC computed on class/file, not isolated function - QA finding 2026-07-11) with setExecutorEnv (source: https://github.com/apache/spark/blob/618d6bff71073c8c93501ab7392c3cc579730f0b/python/pyspark/conf.py#L153-L162)"
+PY-007,python,CC5-8,6,"def get(self, key, defaultValue=None):
+        """"""Get the configured value for some key, or return a default otherwise.""""""
+        if defaultValue is None:   # Py4J doesn't call the right get() if we pass None
+            if self._jconf is not None:
+                if not self._jconf.contains(key):
+                    return None
+                return self._jconf.get(key)
+            else:
+                if key not in self._conf:
+                    return None
+                return self._conf[key]
+        else:
+            if self._jconf is not None:
+                return self._jconf.get(key, defaultValue)
+            else:
+                return self._conf.get(key, defaultValue)",,,PENDING_ANNOTATION,"Replaced (original CC computed on class/file, not isolated function - QA finding 2026-07-11) with get (source: https://github.com/apache/spark/blob/618d6bff71073c8c93501ab7392c3cc579730f0b/python/pyspark/conf.py#L174-L189)"
+PY-008,python,CC5-8,7,"def inherit_doc(cls):
+    """"""
+    A decorator that makes a class inherit documentation from its parents.
+    """"""
+    for name, func in vars(cls).items():
+        # only inherit docstring for public functions
+        if name.startswith(""_""):
+            continue
+        if not func.__doc__:
+            for parent in cls.__bases__:
+                parent_func = getattr(parent, name, None)
+                if parent_func and getattr(parent_func, ""__doc__"", None):
+                    func.__doc__ = parent_func.__doc__
+                    break
+    return cls",,,PENDING_ANNOTATION,"Replaced (original CC computed on class/file, not isolated function - QA finding 2026-07-11) with inherit_doc (source: https://github.com/apache/spark/blob/618d6bff71073c8c93501ab7392c3cc579730f0b/python/pyspark/mllib/common.py#L149-L163)"
+PY-009,python,CC5-8,6,"def load(self, path=None, format=None, schema=None, **options):
+        """"""Loads a data stream from a data source and returns it as a :class`DataFrame`.
 
-        bigs = []
-        for mol in big.mol_indices:
-            bigs.append([1, fps[mol - initial_mol].astype(np.int64), [mol]])
+        .. note:: Evolving.
 
-        return data, bigs",Maintainable,Maintainable,Maintainable,
+        :param path: optional string for file-system backed data sources.
+        :param format: optional string for format of the data source. Default to 'parquet'.
+        :param schema: optional :class:`pyspark.sql.types.StructType` for the input schema
+                       or a DDL-formatted string (For example ``col0 INT, col1 DOUBLE``).
+        :param options: all other string options
+
+        >>> json_sdf = spark.readStream.format(""json"") \\
+        ...     .schema(sdf_schema) \\
+        ...     .load(tempfile.mkdtemp())
+        >>> json_sdf.isStreaming
+        True
+        >>> json_sdf.schema == sdf_schema
+        True
+        """"""
+        if format is not None:
+            self.format(format)
+        if schema is not None:
+            self.schema(schema)
+        self.options(**options)
+        if path is not None:
+            if type(path) != str or len(path.strip()) == 0:
+                raise ValueError(""If the path is provided for stream, it needs to be a "" +
+                                 ""non-empty string. List of paths are not supported."")
+            return self._df(self._jreader.load(path))
+        else:
+            return self._df(self._jreader.load())",,,PENDING_ANNOTATION,"Replaced (original CC computed on class/file, not isolated function - QA finding 2026-07-11) with load (source: https://github.com/apache/spark/blob/618d6bff71073c8c93501ab7392c3cc579730f0b/python/pyspark/sql/streaming.py#L370-L400)"
 PY-020,python,CC5-8,5,"import numpy as np
 import matplotlib
 matplotlib.use('Agg')
@@ -178,44 +236,95 @@ def init_plot(method, title=None):
 
 
         plt.show()",Hard,Hard,Hard,
-PY-025,python,CC5-8,5,"import numpy as np
+PY-025,python,CC9-12,9,"def build_tf_to_pytorch_map(model, config):
+    """""" A map of modules from TF to PyTorch.
+        This time I use a map to keep the PyTorch model as identical to the original PyTorch model as possible.
+    """"""
+    tf_to_pt_map = {}
 
+    if hasattr(model, 'transformer'):
+        # We are loading in a TransfoXLLMHeadModel => we will load also the Adaptive Softmax
+        tf_to_pt_map.update({
+            ""transformer/adaptive_softmax/cutoff_0/cluster_W"": model.crit.cluster_weight,
+            ""transformer/adaptive_softmax/cutoff_0/cluster_b"": model.crit.cluster_bias})
+        for i, (out_l, proj_l, tie_proj) in enumerate(zip(
+                                model.crit.out_layers,
+                                model.crit.out_projs,
+                                config.tie_projs)):
+            layer_str = ""transformer/adaptive_softmax/cutoff_%d/"" % i
+            if config.tie_weight:
+                tf_to_pt_map.update({
+                    layer_str + 'b': out_l.bias})
+            else:
+                raise NotImplementedError
+                # I don't think this is implemented in the TF code
+                tf_to_pt_map.update({
+                    layer_str + 'lookup_table': out_l.weight,
+                    layer_str + 'b': out_l.bias})
+            if not tie_proj:
+                tf_to_pt_map.update({
+                    layer_str + 'proj': proj_l
+                    })
+        # Now load the rest of the transformer
+        model = model.transformer
 
-def __init__(self, *, threshold, branching_factor, is_leaf, n_features, dtype):
-        self.threshold = threshold
-        self.branching_factor = branching_factor
-        self.is_leaf = is_leaf
-        self.n_features = n_features
+    # Embeddings
+    for i, (embed_l, proj_l) in enumerate(zip(model.word_emb.emb_layers, model.word_emb.emb_projs)):
+        layer_str = ""transformer/adaptive_embed/cutoff_%d/"" % i
+        tf_to_pt_map.update({
+            layer_str + 'lookup_table': embed_l.weight,
+            layer_str + 'proj_W': proj_l
+            })
 
-        # The list of subclusters, centroids and squared norms
-        # to manipulate throughout.
-        self.subclusters_ = []
-        self.init_centroids_ = np.zeros((branching_factor + 1, n_features), dtype=dtype)
-        self.prev_leaf_ = None
-        self.next_leaf_ = None
+    # Transformer blocks
+    for i, b in enumerate(model.layers):
+        layer_str = ""transformer/layer_%d/"" % i
+        tf_to_pt_map.update({
+            layer_str + ""rel_attn/LayerNorm/gamma"": b.dec_attn.layer_norm.weight,
+            layer_str + ""rel_attn/LayerNorm/beta"": b.dec_attn.layer_norm.bias,
+            layer_str + ""rel_attn/o/kernel"": b.dec_attn.o_net.weight,
+            layer_str + ""rel_attn/qkv/kernel"": b.dec_attn.qkv_net.weight,
+            layer_str + ""rel_attn/r/kernel"": b.dec_attn.r_net.weight,
+            layer_str + ""ff/LayerNorm/gamma"": b.pos_ff.layer_norm.weight,
+            layer_str + ""ff/LayerNorm/beta"": b.pos_ff.layer_norm.bias,
+            layer_str + ""ff/layer_1/kernel"": b.pos_ff.CoreNet[0].weight,
+            layer_str + ""ff/layer_1/bias"": b.pos_ff.CoreNet[0].bias,
+            layer_str + ""ff/layer_2/kernel"": b.pos_ff.CoreNet[3].weight,
+            layer_str + ""ff/layer_2/bias"": b.pos_ff.CoreNet[3].bias,
+        })
 
-        self.centroids_sum=np.zeros((1, branching_factor + 1),dtype=""int64"")",Maintainable,Maintainable,Maintainable,
-PY-028,python,CC5-8,5,"def fit(self, X, y=None):
-        """"""
-        Build a BF Tree for the input data.
-
-        Parameters
-        ----------
-        X : {array-like, sparse matrix} of shape (n_samples, n_features)
-            Input data.
-
-        y : Ignored
-            Not used, present here for API consistency by convention.
-
-        Returns
-        -------
-        self
-            Fitted estimator.
-        """"""
-
-        # TODO: Add input verification
-        return self._fit(X, partial=False)",Maintainable,Maintainable,Maintainable,
-PY-011,python,CC9-12,11,"import numpy as np
+    # Relative positioning biases
+    if config.untie_r:
+        r_r_list = []
+        r_w_list = []
+        for b in model.layers:
+            r_r_list.append(b.dec_attn.r_r_bias)
+            r_w_list.append(b.dec_attn.r_w_bias)
+    else:
+        r_r_list = [model.r_r_bias]
+        r_w_list = [model.r_w_bias]
+    tf_to_pt_map.update({
+        'transformer/r_r_bias': r_r_list,
+        'transformer/r_w_bias': r_w_list})
+    return tf_to_pt_map",,,PENDING_ANNOTATION,"Replaced (original CC computed on class/file, not isolated function - QA finding 2026-07-11) with build_tf_to_pytorch_map (source: https://github.com/huggingface/pytorch-pretrained-BERT/blob/b832d5bb8a6dfc5965015b828e577677eace601e/pytorch_pretrained_bert/modeling_transfo_xl.py#L56-L126)"
+PY-028,python,CC9-12,12,"def tie_weights(self):
+        """""" Run this to be sure output and input (adaptive) softmax weights are tied """"""
+        # sampled softmax
+        if self.sample_softmax > 0:
+            if self.config.tie_weight:
+                self.out_layer.weight = self.transformer.word_emb.weight
+        # adaptive softmax (including standard softmax)
+        else:
+            if self.config.tie_weight:
+                for i in range(len(self.crit.out_layers)):
+                    self.crit.out_layers[i].weight = self.transformer.word_emb.emb_layers[i].weight
+            if self.config.tie_projs:
+                for i, tie_proj in enumerate(self.config.tie_projs):
+                    if tie_proj and self.config.div_val == 1 and self.config.d_model != self.config.d_embed:
+                        self.crit.out_projs[i] = self.transformer.word_emb.emb_projs[0]
+                    elif tie_proj and self.config.div_val != 1:
+                        self.crit.out_projs[i] = self.transformer.word_emb.emb_projs[i]",,,PENDING_ANNOTATION,"Replaced (original CC computed on class/file, not isolated function - QA finding 2026-07-11) with tie_weights (source: https://github.com/huggingface/pytorch-pretrained-BERT/blob/b832d5bb8a6dfc5965015b828e577677eace601e/pytorch_pretrained_bert/modeling_transfo_xl.py#L1331-L1347)"
+PY-011,python,CC5-8,6,"import numpy as np
 
 
 def get_top_cluster_params(self, X, top):
@@ -276,39 +385,48 @@ PY-015,python,CC9-12,9,"def check_cluster_structure(brc):
         print(msg)
 
     print(f'The range of molecular indices is {min(mol_j_vals)} thru {max(mol_j_vals)}')",Maintainable,Maintainable,Maintainable,
-PY-016,python,CC9-12,9,"def forward(self):
-        print('Running Cluster Analysis: \n')
-        print('Computing clustering metrics...')
-        self.chi_val, self.dbi_val, self.dunn_val = self.clustering_metrics()
-        print(f'Chi:{self.chi_val}')
-        print(f'DBI:{self.dbi_val}')
-        print(f'Dunn:{self.dunn_val}\n')
+PY-016,python,CC9-12,9,"def reindex_indexer(self, new_axis, indexer, axis, fill_value=None,
+                        allow_dups=False, copy=True):
+        """"""
+        Parameters
+        ----------
+        new_axis : Index
+        indexer : ndarray of int64 or None
+        axis : int
+        fill_value : object
+        allow_dups : bool
 
-        print('Analyzing the biggest cluster...')
-        biggest_cluster, fps_biggest_cluster = self.get_biggest_cluster()
-        (self.n_biggest_cluster, self.isim_biggest_cluster, 
-        self.isim_outliers, self.isim_medoids, self.radius_value) = self.biggest_cluster_metrics(biggest_cluster, fps_biggest_cluster)
-        print(f'Size of biggest cluster: {self.n_biggest_cluster}')
-        print(f'iSIM: {self.isim_biggest_cluster}')
-        print(f'iSIM of the outliers: {self.isim_outliers}')
-        print(f'iSIM of the medoids: {self.isim_medoids}')
-        print(f'Radius of biggest_cluster: {self.radius_value} \n')
+        pandas-indexer with -1's only.
+        """"""
+        if indexer is None:
+            if new_axis is self.axes[axis] and not copy:
+                return self
 
-        print('Looking for unique scaffolds...')
-        self.unique_scaffolds, self.scaffolds_iSIM = self.scaffold_analysis(biggest_cluster)
-        print(f'Number of unique scaffolds: {self.unique_scaffolds}')
-        print(f'iSIM of unique scaffolds: {self.scaffolds_iSIM} \n')
-        
-        print('Getting total clusters...')
-        clusters = self.get_clusters()
-        self.total_clusters = len(clusters)
-        self.larger_clusters = [x for x in [len(cluster) > 10 for cluster in clusters] if x]
-        print(f'Total number of clusters: {self.total_clusters}')
-        print(f'Total number of clusters with more than 10 molecules: {len(self.larger_clusters)} \n')
-        
-        print('Analysis Complete!')
-        
-        return clusters",Hard,Hard,Hard,
+            result = self.copy(deep=copy)
+            result.axes = list(self.axes)
+            result.axes[axis] = new_axis
+            return result
+
+        self._consolidate_inplace()
+
+        # some axes don't allow reindexing with dups
+        if not allow_dups:
+            self.axes[axis]._can_reindex(indexer)
+
+        if axis >= self.ndim:
+            raise IndexError(""Requested axis not found in manager"")
+
+        if axis == 0:
+            new_blocks = self._slice_take_blocks_ax0(indexer,
+                                                     fill_tuple=(fill_value,))
+        else:
+            new_blocks = [blk.take_nd(indexer, axis=axis, fill_tuple=(
+                fill_value if fill_value is not None else blk.fill_value,))
+                for blk in self.blocks]
+
+        new_axes = list(self.axes)
+        new_axes[axis] = new_axis
+        return self.__class__(new_blocks, new_axes)",,,PENDING_ANNOTATION,"Replaced (original CC computed on class/file, not isolated function - QA finding 2026-07-11) with reindex_indexer (source: https://github.com/pandas-dev/pandas/blob/9feb3ad92cc0397a04b665803a49299ee7aa1037/pandas/core/internals/managers.py#L1194-L1235)"
 PY-021,python,CC9-12,10,"import plotly.graph_objects as go
 
 
@@ -359,44 +477,99 @@ def mol_relocation_plots(brc_1, brc_2, top_n = 2, title=None):
         font_size=10
     )
     fig.show()",Hard,Hard,Hard,
-PY-037,python,CC9-12,9,"def get_cluster_mol_ids(self):
-        """"""Method to return the indices of molecules in each cluster""""""
-        # TODO: create torch version of this function for tensor output
-        if self.first_call:
-            raise ValueError('The model has not been fitted yet.')
-
-        clusters_mol_id = []
-        for leaf in self._get_leaves():
-            for subcluster in leaf.subclusters_:
-                clusters_mol_id.append(subcluster.mol_indices)
-
-        return clusters_mol_id",Maintainable,Maintainable,Maintainable,
-PY-048,python,CC9-12,9,"import numpy as np
-
-
-def act(self, cent_obs, obs, rnn_states_actor, masks, available_actions=None, deterministic=True):
+PY-037,python,CC13-15,14,"def update(self, mini_batch, num_sequences):
         """"""
-        Compute actions using the given inputs.
-        :param obs (np.ndarray): local agent inputs to the actor.
-        :param rnn_states_actor: (np.ndarray) if actor is RNN, RNN states for actor.
-        :param masks: (np.ndarray) denotes points at which RNN states should be reset.
-        :param available_actions: (np.ndarray) denotes which actions are available to agent
-                                  (if None, all actions available)
-        :param deterministic: (bool) whether the action should be mode of distribution or should be sampled.
+        Updates model using buffer.
+        :param num_sequences: Number of trajectories in batch.
+        :param mini_batch: Experience batch.
+        :return: Output from update process.
         """"""
+        feed_dict = {self.model.batch_size: num_sequences,
+                     self.model.sequence_length: self.sequence_length,
+                     self.model.mask_input: mini_batch['masks'].flatten(),
+                     self.model.returns_holder: mini_batch['discounted_returns'].flatten(),
+                     self.model.old_value: mini_batch['value_estimates'].flatten(),
+                     self.model.advantage: mini_batch['advantages'].reshape([-1, 1]),
+                     self.model.all_old_log_probs: mini_batch['action_probs'].reshape(
+                         [-1, sum(self.model.act_size)])}
+        if self.use_continuous_act:
+            feed_dict[self.model.output_pre] = mini_batch['actions_pre'].reshape(
+                [-1, self.model.act_size[0]])
+            feed_dict[self.model.epsilon] = mini_batch['random_normal_epsilon'].reshape(
+                [-1, self.model.act_size[0]])
+        else:
+            feed_dict[self.model.action_holder] = mini_batch['actions'].reshape(
+                [-1, len(self.model.act_size)])
+            if self.use_recurrent:
+                feed_dict[self.model.prev_action] = mini_batch['prev_action'].reshape(
+                    [-1, len(self.model.act_size)])
+            feed_dict[self.model.action_masks] = mini_batch['action_mask'].reshape(
+                [-1, sum(self.brain.vector_action_space_size)])
+        if self.use_vec_obs:
+            feed_dict[self.model.vector_in] = mini_batch['vector_obs'].reshape(
+                [-1, self.vec_obs_size])
+            if self.use_curiosity:
+                feed_dict[self.model.next_vector_in] = mini_batch['next_vector_in'].reshape(
+                    [-1, self.vec_obs_size])
+        if self.model.vis_obs_size > 0:
+            for i, _ in enumerate(self.model.visual_in):
+                _obs = mini_batch['visual_obs%d' % i]
+                if self.sequence_length > 1 and self.use_recurrent:
+                    (_batch, _seq, _w, _h, _c) = _obs.shape
+                    feed_dict[self.model.visual_in[i]] = _obs.reshape([-1, _w, _h, _c])
+                else:
+                    feed_dict[self.model.visual_in[i]] = _obs
+            if self.use_curiosity:
+                for i, _ in enumerate(self.model.visual_in):
+                    _obs = mini_batch['next_visual_obs%d' % i]
+                    if self.sequence_length > 1 and self.use_recurrent:
+                        (_batch, _seq, _w, _h, _c) = _obs.shape
+                        feed_dict[self.model.next_visual_in[i]] = _obs.reshape([-1, _w, _h, _c])
+                    else:
+                        feed_dict[self.model.next_visual_in[i]] = _obs
+        if self.use_recurrent:
+            mem_in = mini_batch['memory'][:, 0, :]
+            feed_dict[self.model.memory_in] = mem_in
+        self.has_updated = True
+        run_out = self._execute_model(feed_dict, self.update_dict)
+        return run_out",,,PENDING_ANNOTATION,"Replaced (original CC computed on class/file, not isolated function - QA finding 2026-07-11) with update (source: https://github.com/Unity-Technologies/ml-agents/blob/37d139af636e4a2351751fbf0f2fca5a9ed7457f/ml-agents/mlagents/trainers/ppo/policy.py#L89-L144)"
+PY-048,python,CC13-15,13,"def get_fk_many_from_list(
+            self, object_list, fkmany, fkmany_class, key_attr):
+        """"""Update ORM one-to-many list from object list
 
-        # this function is just a wrapper for compatibility
-        rnn_states_critic = np.zeros_like(rnn_states_actor)
-        _, actions, _, rnn_states_actor, _ = self.get_actions(cent_obs,
-                                                              obs,
-                                                              rnn_states_actor,
-                                                              rnn_states_critic,
-                                                              masks,
-                                                              available_actions,
-                                                              deterministic)
+        Used for syncing metrics and columns using the same code""""""
 
-        return actions, rnn_states_actor",Maintainable,Maintainable,Maintainable,
-PY-042,python,CC13-15,15,"import numpy as np
+        object_dict = {o.get(key_attr): o for o in object_list}
+        object_keys = [o.get(key_attr) for o in object_list]
+
+        # delete fks that have been removed
+        fkmany = [o for o in fkmany if getattr(o, key_attr) in object_keys]
+
+        # sync existing fks
+        for fk in fkmany:
+            obj = object_dict.get(getattr(fk, key_attr))
+            for attr in fkmany_class.update_from_object_fields:
+                setattr(fk, attr, obj.get(attr))
+
+        # create new fks
+        new_fks = []
+        orm_keys = [getattr(o, key_attr) for o in fkmany]
+        for obj in object_list:
+            key = obj.get(key_attr)
+            if key not in orm_keys:
+                del obj['id']
+                orm_kwargs = {}
+                for k in obj:
+                    if (
+                        k in fkmany_class.update_from_object_fields and
+                        k in obj
+                    ):
+                        orm_kwargs[k] = obj[k]
+                new_obj = fkmany_class(**orm_kwargs)
+                new_fks.append(new_obj)
+        fkmany += new_fks
+        return fkmany",,,PENDING_ANNOTATION,"Replaced (original CC computed on class/file, not isolated function - QA finding 2026-07-11) with get_fk_many_from_list (source: https://github.com/apache/incubator-superset/blob/ca2996c78f679260eb79c6008e276733df5fb653/superset/connectors/base/models.py#L281-L316)"
+PY-042,python,CC5-8,7,"import numpy as np
 
 
 def train(self, buffer, update_actor=True):
@@ -451,33 +624,40 @@ def train(self, buffer, update_actor=True):
             train_info[k] /= num_updates
  
         return train_info",Hard,Hard,Hard,
-PY-043,python,CC13-15,15,"def get_actions(self, cent_obs, obs, rnn_states_actor, rnn_states_critic, masks, available_actions=None,
-                    deterministic=False):
-        """"""
-        Compute actions and value function predictions for the given inputs.
-        :param cent_obs (np.ndarray): centralized input to the critic.
-        :param obs (np.ndarray): local agent inputs to the actor.
-        :param rnn_states_actor: (np.ndarray) if actor is RNN, RNN states for actor.
-        :param rnn_states_critic: (np.ndarray) if critic is RNN, RNN states for critic.
-        :param masks: (np.ndarray) denotes points at which RNN states should be reset.
-        :param available_actions: (np.ndarray) denotes which actions are available to agent
-                                  (if None, all actions available)
-        :param deterministic: (bool) whether the action should be mode of distribution or should be sampled.
+PY-043,python,CC9-12,11,"def validate_fillna_kwargs(value, method, validate_scalar_dict_value=True):
+    """"""Validate the keyword arguments to 'fillna'.
 
-        :return values: (torch.Tensor) value function predictions.
-        :return actions: (torch.Tensor) actions to take.
-        :return action_log_probs: (torch.Tensor) log probabilities of chosen actions.
-        :return rnn_states_actor: (torch.Tensor) updated actor network RNN states.
-        :return rnn_states_critic: (torch.Tensor) updated critic network RNN states.
-        """"""
-        actions, action_log_probs, rnn_states_actor = self.actor(obs,
-                                                                 rnn_states_actor,
-                                                                 masks,
-                                                                 available_actions,
-                                                                 deterministic)
+    This checks that exactly one of 'value' and 'method' is specified.
+    If 'method' is specified, this validates that it's a valid method.
 
-        values, rnn_states_critic = self.critic(cent_obs, rnn_states_critic, masks)
-        return values, actions, action_log_probs, rnn_states_actor, rnn_states_critic",Maintainable,Maintainable,Maintainable,
+    Parameters
+    ----------
+    value, method : object
+        The 'value' and 'method' keyword arguments for 'fillna'.
+    validate_scalar_dict_value : bool, default True
+        Whether to validate that 'value' is a scalar or dict. Specifically,
+        validate that it is not a list or tuple.
+
+    Returns
+    -------
+    value, method : object
+    """"""
+    from pandas.core.missing import clean_fill_method
+
+    if value is None and method is None:
+        raise ValueError(""Must specify a fill 'value' or 'method'."")
+    elif value is None and method is not None:
+        method = clean_fill_method(method)
+
+    elif value is not None and method is None:
+        if validate_scalar_dict_value and isinstance(value, (list, tuple)):
+            raise TypeError('""value"" parameter must be a scalar or dict, but '
+                            'you passed a ""{0}""'.format(type(value).__name__))
+
+    elif value is not None and method is not None:
+        raise ValueError(""Cannot specify both 'value' and 'method'."")
+
+    return value, method",,,PENDING_ANNOTATION,"Replaced (original CC computed on class/file, not isolated function - QA finding 2026-07-11) with validate_fillna_kwargs (source: https://github.com/pandas-dev/pandas/blob/9feb3ad92cc0397a04b665803a49299ee7aa1037/pandas/util/_validators.py#L325-L358)"
 PY-049,python,CC5-8,5,"def merge_intervals(intervals):
     if not intervals:
         return []

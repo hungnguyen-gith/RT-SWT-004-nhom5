@@ -1,25 +1,36 @@
-import numpy as np
+def get_fk_many_from_list(
+            self, object_list, fkmany, fkmany_class, key_attr):
+        """Update ORM one-to-many list from object list
 
+        Used for syncing metrics and columns using the same code"""
 
-def act(self, cent_obs, obs, rnn_states_actor, masks, available_actions=None, deterministic=True):
-        """
-        Compute actions using the given inputs.
-        :param obs (np.ndarray): local agent inputs to the actor.
-        :param rnn_states_actor: (np.ndarray) if actor is RNN, RNN states for actor.
-        :param masks: (np.ndarray) denotes points at which RNN states should be reset.
-        :param available_actions: (np.ndarray) denotes which actions are available to agent
-                                  (if None, all actions available)
-        :param deterministic: (bool) whether the action should be mode of distribution or should be sampled.
-        """
-
-        # this function is just a wrapper for compatibility
-        rnn_states_critic = np.zeros_like(rnn_states_actor)
-        _, actions, _, rnn_states_actor, _ = self.get_actions(cent_obs,
-                                                              obs,
-                                                              rnn_states_actor,
-                                                              rnn_states_critic,
-                                                              masks,
-                                                              available_actions,
-                                                              deterministic)
-
-        return actions, rnn_states_actor
+        object_dict = {o.get(key_attr): o for o in object_list}
+        object_keys = [o.get(key_attr) for o in object_list]
+
+        # delete fks that have been removed
+        fkmany = [o for o in fkmany if getattr(o, key_attr) in object_keys]
+
+        # sync existing fks
+        for fk in fkmany:
+            obj = object_dict.get(getattr(fk, key_attr))
+            for attr in fkmany_class.update_from_object_fields:
+                setattr(fk, attr, obj.get(attr))
+
+        # create new fks
+        new_fks = []
+        orm_keys = [getattr(o, key_attr) for o in fkmany]
+        for obj in object_list:
+            key = obj.get(key_attr)
+            if key not in orm_keys:
+                del obj['id']
+                orm_kwargs = {}
+                for k in obj:
+                    if (
+                        k in fkmany_class.update_from_object_fields and
+                        k in obj
+                    ):
+                        orm_kwargs[k] = obj[k]
+                new_obj = fkmany_class(**orm_kwargs)
+                new_fks.append(new_obj)
+        fkmany += new_fks
+        return fkmany

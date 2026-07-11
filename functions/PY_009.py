@@ -1,20 +1,31 @@
-import numpy as np
+def load(self, path=None, format=None, schema=None, **options):
+        """Loads a data stream from a data source and returns it as a :class`DataFrame`.
 
+        .. note:: Evolving.
 
-def prepare_data_BFs(self, fps, initial_mol = 0):
-        """Method to prepare the BitFeatures of the largest cluster and the rest of the clusters"""
-        if self.first_call:
-            raise ValueError('The model has not been fitted yet.')
-        
-        BFs = self._get_BFs()
-        big, rest = BFs[0], BFs[1:]
-
-        data = []
-        for BF in rest:
-            data.append([BF.n_samples_, BF.linear_sum_.astype(np.int64), BF.mol_indices])
-
-        bigs = []
-        for mol in big.mol_indices:
-            bigs.append([1, fps[mol - initial_mol].astype(np.int64), [mol]])
-
-        return data, bigs
+        :param path: optional string for file-system backed data sources.
+        :param format: optional string for format of the data source. Default to 'parquet'.
+        :param schema: optional :class:`pyspark.sql.types.StructType` for the input schema
+                       or a DDL-formatted string (For example ``col0 INT, col1 DOUBLE``).
+        :param options: all other string options
+
+        >>> json_sdf = spark.readStream.format("json") \\
+        ...     .schema(sdf_schema) \\
+        ...     .load(tempfile.mkdtemp())
+        >>> json_sdf.isStreaming
+        True
+        >>> json_sdf.schema == sdf_schema
+        True
+        """
+        if format is not None:
+            self.format(format)
+        if schema is not None:
+            self.schema(schema)
+        self.options(**options)
+        if path is not None:
+            if type(path) != str or len(path.strip()) == 0:
+                raise ValueError("If the path is provided for stream, it needs to be a " +
+                                 "non-empty string. List of paths are not supported.")
+            return self._df(self._jreader.load(path))
+        else:
+            return self._df(self._jreader.load())

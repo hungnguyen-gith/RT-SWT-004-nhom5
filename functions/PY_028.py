@@ -1,20 +1,17 @@
-def fit(self, X, y=None):
-        """
-        Build a BF Tree for the input data.
-
-        Parameters
-        ----------
-        X : {array-like, sparse matrix} of shape (n_samples, n_features)
-            Input data.
-
-        y : Ignored
-            Not used, present here for API consistency by convention.
-
-        Returns
-        -------
-        self
-            Fitted estimator.
-        """
-
-        # TODO: Add input verification
-        return self._fit(X, partial=False)
+def tie_weights(self):
+        """ Run this to be sure output and input (adaptive) softmax weights are tied """
+        # sampled softmax
+        if self.sample_softmax > 0:
+            if self.config.tie_weight:
+                self.out_layer.weight = self.transformer.word_emb.weight
+        # adaptive softmax (including standard softmax)
+        else:
+            if self.config.tie_weight:
+                for i in range(len(self.crit.out_layers)):
+                    self.crit.out_layers[i].weight = self.transformer.word_emb.emb_layers[i].weight
+            if self.config.tie_projs:
+                for i, tie_proj in enumerate(self.config.tie_projs):
+                    if tie_proj and self.config.div_val == 1 and self.config.d_model != self.config.d_embed:
+                        self.crit.out_projs[i] = self.transformer.word_emb.emb_projs[0]
+                    elif tie_proj and self.config.div_val != 1:
+                        self.crit.out_projs[i] = self.transformer.word_emb.emb_projs[i]

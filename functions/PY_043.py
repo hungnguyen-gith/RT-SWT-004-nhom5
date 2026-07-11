@@ -1,27 +1,34 @@
-def get_actions(self, cent_obs, obs, rnn_states_actor, rnn_states_critic, masks, available_actions=None,
-                    deterministic=False):
-        """
-        Compute actions and value function predictions for the given inputs.
-        :param cent_obs (np.ndarray): centralized input to the critic.
-        :param obs (np.ndarray): local agent inputs to the actor.
-        :param rnn_states_actor: (np.ndarray) if actor is RNN, RNN states for actor.
-        :param rnn_states_critic: (np.ndarray) if critic is RNN, RNN states for critic.
-        :param masks: (np.ndarray) denotes points at which RNN states should be reset.
-        :param available_actions: (np.ndarray) denotes which actions are available to agent
-                                  (if None, all actions available)
-        :param deterministic: (bool) whether the action should be mode of distribution or should be sampled.
-
-        :return values: (torch.Tensor) value function predictions.
-        :return actions: (torch.Tensor) actions to take.
-        :return action_log_probs: (torch.Tensor) log probabilities of chosen actions.
-        :return rnn_states_actor: (torch.Tensor) updated actor network RNN states.
-        :return rnn_states_critic: (torch.Tensor) updated critic network RNN states.
-        """
-        actions, action_log_probs, rnn_states_actor = self.actor(obs,
-                                                                 rnn_states_actor,
-                                                                 masks,
-                                                                 available_actions,
-                                                                 deterministic)
-
-        values, rnn_states_critic = self.critic(cent_obs, rnn_states_critic, masks)
-        return values, actions, action_log_probs, rnn_states_actor, rnn_states_critic
+def validate_fillna_kwargs(value, method, validate_scalar_dict_value=True):
+    """Validate the keyword arguments to 'fillna'.
+
+    This checks that exactly one of 'value' and 'method' is specified.
+    If 'method' is specified, this validates that it's a valid method.
+
+    Parameters
+    ----------
+    value, method : object
+        The 'value' and 'method' keyword arguments for 'fillna'.
+    validate_scalar_dict_value : bool, default True
+        Whether to validate that 'value' is a scalar or dict. Specifically,
+        validate that it is not a list or tuple.
+
+    Returns
+    -------
+    value, method : object
+    """
+    from pandas.core.missing import clean_fill_method
+
+    if value is None and method is None:
+        raise ValueError("Must specify a fill 'value' or 'method'.")
+    elif value is None and method is not None:
+        method = clean_fill_method(method)
+
+    elif value is not None and method is None:
+        if validate_scalar_dict_value and isinstance(value, (list, tuple)):
+            raise TypeError('"value" parameter must be a scalar or dict, but '
+                            'you passed a "{0}"'.format(type(value).__name__))
+
+    elif value is not None and method is not None:
+        raise ValueError("Cannot specify both 'value' and 'method'.")
+
+    return value, method

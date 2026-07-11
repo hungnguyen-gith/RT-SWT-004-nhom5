@@ -1,0 +1,64 @@
+function_id,module_name,cc_band,cc_value,return_code,elapsed_seconds,test_file_generated,stderr_tail,stdout_tail
+PY-005,PY_005,CC5-8,7,0,62.0,True,,
+PY-006,PY_006,CC5-8,6,0,61.6,True,,
+PY-007,PY_007,CC5-8,6,0,61.5,True,,
+PY-008,PY_008,CC5-8,6,0,61.6,True,,
+PY-009,PY_009,CC5-8,7,0,88.6,True,,
+PY-020,PY_020,CC5-8,5,0,93.0,True,,"[14:18:31] WARNING  Unexpectedly had no exception name raised syntaxtree.py:223
+                    and no exception in context.                               
+"
+PY-023,PY_023,CC5-8,5,0,104.6,True,"Exception ignored in atexit callback: <bound method Gcf.destroy_all of <class 'matplotlib._pylab_helpers.Gcf'>>
+Traceback (most recent call last):
+  File ""F:\Ky5\SWT\RT-SWT-004-nhom5\pynguin_env\lib\site-packages\matplotlib\_pylab_helpers.py"", line 81, in destroy_all
+    manager.destroy()
+  File ""F:\Ky5\SWT\RT-SWT-004-nhom5\pynguin_env\lib\site-packages\matplotlib\backends\_backend_tk.py"", line 618, in destroy
+    self._window_dpi.trace_remove('write', self._window_dpi_cbname)
+  File ""C:\Users\ADMIN\AppData\Local\Programs\Python\Python310\lib\tkinter\__init__.py"", line 449, in trace_remove
+    self._tk.call('trace', 'remove', 'variable',
+RuntimeError: main thread is not in main loop
+","[13:48:53] WARNING  Unexpectedly had no exception name raised syntaxtree.py:223
+                    and no exception in context.                               
+"
+PY-025,PY_025,CC5-8,5,0,87.8,True,,
+PY-028,PY_028,CC5-8,5,0,1.4,True,,
+PY-011,PY_011,CC9-12,11,0,103.8,True,,
+PY-015,PY_015,CC9-12,9,0,62.1,True,,
+PY-016,PY_016,CC9-12,9,0,62.2,True,,
+PY-021,PY_021,CC9-12,10,0,62.6,True,,
+PY-037,PY_037,CC9-12,9,0,61.4,True,,
+PY-048,PY_048,CC9-12,9,0,7.0,True,,
+PY-042,PY_042,CC13-15,15,0,91.7,True,,
+PY-043,PY_043,CC13-15,15,0,1.5,True,,
+PY-049,PY_049,CC5-8,5,0,53.4,True,,
+PY-050,PY_050,CC5-8,6,0,61.8,True,,
+PY-051,PY_051,CC9-12,9,0,62.1,True,,
+PY-052,PY_052,CC9-12,11,0,61.9,True,,
+PY-053,PY_053,CC9-12,9,0,63.0,True,,
+PY-054,PY_054,CC9-12,11,0,19.3,True,,
+PY-055,PY_055,CC9-12,12,0,31.4,True,,
+PY-056,PY_056,CC13-15,14,0,39.3,True,,
+PY-057,PY_057,CC13-15,14,0,19.6,True,,
+PY-058,PY_058,CC13-15,15,0,65.1,True,,
+PY-060,PY_060,CC13-15,13,0,64.1,True,,
+PY-062,PY_062,CC13-15,15,0,63.3,True,,
+PY-063,PY_063,CC13-15,13,0,63.1,True,,
+PY-064,PY_064,CC13-15,13,0,62.8,True,,
+PY-065,PY_065,CC13-15,14,0,63.2,True,,
+PY-066,PY_066,CC5-8,5,0,61.8,True,,
+PY-067,PY_067,CC5-8,5,0,62.1,True,,
+PY-068,PY_068,CC5-8,6,0,61.8,True,,
+PY-069,PY_069,CC5-8,6,0,61.5,True,,
+PY-070,PY_070,CC5-8,7,0,37.5,True,,
+PY-071,PY_071,CC5-8,5,0,61.7,True,,
+PY-072,PY_072,CC5-8,6,0,61.6,True,,
+PY-073,PY_073,CC5-8,5,0,93.3,True,,
+PY-074,PY_074,CC5-8,6,0,64.0,True,,
+PY-075,PY_075,CC9-12,9,0,62.2,True,,
+PY-076,PY_076,CC9-12,10,0,62.1,True,,
+PY-077,PY_077,CC9-12,10,0,62.3,True,,
+PY-078,PY_078,CC9-12,10,0,61.9,True,,
+PY-079,PY_079,CC9-12,9,0,40.5,True,,
+PY-080,PY_080,CC9-12,11,0,68.3,True,,
+PY-081,PY_081,CC9-12,10,0,63.9,True,,
+PY-082,PY_082,CC9-12,12,0,62.8,True,,
+PY-083,PY_083,CC9-12,10,0,62.0,True,,
