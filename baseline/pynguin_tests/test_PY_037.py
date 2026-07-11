@@ -6,4 +6,5 @@ import PY_037 as module_0
 
 @pytest.mark.xfail(strict=True)
 def test_case_0():
-    module_0.get_cluster_mol_ids()
+    none_type_0 = None
+    module_0.update(none_type_0, none_type_0)

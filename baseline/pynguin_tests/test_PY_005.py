@@ -6,4 +6,5 @@ import PY_005 as module_0
 
 @pytest.mark.xfail(strict=True)
 def test_case_0():
-    module_0.get_centroids_mol_ids()
+    none_type_0 = None
+    module_0.take(none_type_0)

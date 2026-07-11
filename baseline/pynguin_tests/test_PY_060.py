@@ -82,17 +82,16 @@ def test_case_6():
 @pytest.mark.xfail(strict=True)
 def test_case_7():
     bool_0 = True
-    none_type_0 = None
-    var_0 = module_0.grade_exam(
-        bool_0, bool_0, bool_0, bool_0, none_type_0, none_type_0
-    )
-    assert var_0 == "F"
-    object_0 = module_1.object()
-    var_1 = module_1.object()
-    int_0 = 68
-    var_2 = module_0.grade_exam(int_0, int_0, int_0, int_0, int_0, int_0)
-    assert var_2 == "B"
-    module_1.object(**bool_0)
+    float_0 = 1607.0
+    var_0 = module_0.grade_exam(bool_0, bool_0, float_0, float_0, bool_0, float_0)
+    assert var_0 == "B"
+    bytes_0 = b""
+    float_1 = 66.7848
+    var_1 = module_0.grade_exam(bool_0, float_1, float_0, float_1, float_0, bool_0)
+    assert var_1 == "D"
+    var_2 = module_0.grade_exam(bool_0, float_0, bytes_0, bool_0, bytes_0, float_1)
+    assert var_2 == "D"
+    module_0.grade_exam(var_2, bool_0, var_0, float_0, var_0, var_2)
 
 
 @pytest.mark.xfail(strict=True)

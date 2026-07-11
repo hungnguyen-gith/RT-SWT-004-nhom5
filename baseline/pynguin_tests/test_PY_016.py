@@ -6,4 +6,17 @@ import PY_016 as module_0
 
 @pytest.mark.xfail(strict=True)
 def test_case_0():
-    module_0.forward()
+    none_type_0 = None
+    module_0.reindex_indexer(none_type_0, none_type_0, none_type_0, none_type_0)
+
+
+@pytest.mark.xfail(strict=True)
+def test_case_1():
+    int_0 = 830
+    module_0.reindex_indexer(int_0, int_0, int_0, int_0)
+
+
+@pytest.mark.xfail(strict=True)
+def test_case_2():
+    bytes_0 = b"\x12\x81"
+    module_0.reindex_indexer(bytes_0, bytes_0, bytes_0)

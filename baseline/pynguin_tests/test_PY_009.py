@@ -6,5 +6,23 @@ import PY_009 as module_0
 
 @pytest.mark.xfail(strict=True)
 def test_case_0():
-    none_type_0 = None
-    module_0.prepare_data_BFs(none_type_0)
+    str_0 = "0!ahAG~Ird"
+    module_0.load(str_0, schema=str_0)
+
+
+@pytest.mark.xfail(strict=True)
+def test_case_1():
+    bytes_0 = b"\xd0/\xbb\x7fH!2\xa2\xe0\x16\xf3\x84\xdb\xb9\xbf"
+    tuple_0 = (bytes_0,)
+    module_0.load(tuple_0)
+
+
+@pytest.mark.xfail(strict=True)
+def test_case_2():
+    module_0.load()
+
+
+@pytest.mark.xfail(strict=True)
+def test_case_3():
+    int_0 = -155
+    module_0.load(int_0, int_0, int_0)

@@ -65,3 +65,10 @@ def test_case_9():
     none_type_0 = None
     with pytest.raises(ValueError):
         module_0.trigger(none_type_0, str_0)
+
+
+@pytest.mark.xfail(strict=True)
+def test_case_10():
+    none_type_0 = None
+    bool_0 = True
+    module_0.trigger(bool_0, none_type_0, bool_0)

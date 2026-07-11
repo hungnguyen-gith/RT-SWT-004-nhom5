@@ -143,18 +143,26 @@ def test_case_7():
 
 
 def test_case_8():
-    int_0 = 60
-    int_1 = 603
-    var_0 = module_0.compute_loan_eligibility(int_1, int_1, int_0, int_1, int_0, int_0)
-    assert var_0 == 60
-    var_1 = module_0.compute_loan_eligibility(int_1, int_1, int_1, int_1, int_0, int_1)
-    object_0 = module_1.object()
-    bool_0 = False
-    int_2 = -5573
-    set_0 = {bool_0}
-    bool_1 = False
-    var_2 = module_0.compute_loan_eligibility(int_2, set_0, set_0, bool_1, int_1, set_0)
-    assert var_2 is False
+    int_0 = 69
+    var_0 = module_0.compute_loan_eligibility(int_0, int_0, int_0, int_0, int_0, int_0)
+    int_1 = 2665
+    var_1 = module_0.compute_loan_eligibility(int_0, int_0, int_1, int_0, int_0, int_1)
+    int_2 = 756
+    var_2 = module_0.compute_loan_eligibility(int_2, int_0, int_0, int_2, int_2, int_0)
+    var_3 = module_0.compute_loan_eligibility(var_2, int_2, var_2, int_0, int_0, int_2)
+    assert var_3 is True
+    var_4 = module_0.compute_loan_eligibility(var_3, var_3, int_0, int_2, var_2, var_3)
+    var_5 = module_0.compute_loan_eligibility(var_3, var_3, var_2, int_2, var_2, int_2)
+    int_3 = 601
+    var_6 = module_0.compute_loan_eligibility(int_3, int_3, int_0, var_3, int_0, int_0)
+    assert var_6 == 69
+    var_7 = module_0.compute_loan_eligibility(int_3, int_3, int_3, int_3, int_0, int_3)
+    var_8 = module_0.compute_loan_eligibility(int_0, int_3, int_0, var_2, int_0, var_2)
+    list_0 = []
+    var_9 = module_0.compute_loan_eligibility(var_2, var_2, var_5, list_0, int_2, var_2)
+    var_10 = module_0.compute_loan_eligibility(
+        var_7, var_8, var_0, list_0, var_6, int_3
+    )
 
 
 def test_case_9():

@@ -39,16 +39,10 @@ def test_case_4():
 @pytest.mark.xfail(strict=True)
 def test_case_5():
     str_0 = "gold"
-    none_type_0 = None
-    module_0.compute_discount(none_type_0, str_0)
+    module_0.compute_discount(str_0, str_0)
 
 
 @pytest.mark.xfail(strict=True)
 def test_case_6():
-    bool_0 = False
     str_0 = "silver"
-    var_0 = module_0.compute_discount(bool_0, bool_0, str_0, bool_0)
-    var_1 = module_0.compute_discount(bool_0, str_0, is_first_order=str_0)
-    assert var_1 == pytest.approx(0.0, abs=0.01, rel=0.01)
-    set_0 = {str_0, var_1, str_0, str_0, str_0}
-    module_0.compute_discount(set_0, set_0)
+    module_0.compute_discount(str_0, str_0, is_first_order=str_0)

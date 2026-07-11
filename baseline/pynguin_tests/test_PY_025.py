@@ -7,10 +7,4 @@ import PY_025 as module_0
 @pytest.mark.xfail(strict=True)
 def test_case_0():
     none_type_0 = None
-    module_0.__init__(
-        threshold=none_type_0,
-        branching_factor=none_type_0,
-        is_leaf=none_type_0,
-        n_features=none_type_0,
-        dtype=none_type_0,
-    )
+    module_0.build_tf_to_pytorch_map(none_type_0, none_type_0)

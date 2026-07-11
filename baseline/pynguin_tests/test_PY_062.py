@@ -2,7 +2,6 @@
 # Please check them before you use them.
 import pytest
 import PY_062 as module_0
-import builtins as module_1
 
 
 @pytest.mark.xfail(strict=True)
@@ -73,17 +72,13 @@ def test_case_7():
     dict_1 = {float_0: float_0, str_0: dict_0, float_0: dict_0}
     var_0 = module_0.validate_form_submission(dict_1, dict_1, dict_1, dict_0)
     bool_0 = True
-    module_0.validate_form_submission(bool_0, float_0, str_0, bool_0)
+    module_0.validate_form_submission(float_0, str_0, bool_0, dict_1)
 
 
-@pytest.mark.xfail(strict=True)
 def test_case_8():
     tuple_0 = ()
     dict_0 = {tuple_0: tuple_0, tuple_0: tuple_0, tuple_0: tuple_0, tuple_0: tuple_0}
     var_0 = module_0.validate_form_submission(dict_0, tuple_0, dict_0, dict_0)
-    str_0 = "Ue025[I`*H#F P7h@H&-"
-    dict_1 = {tuple_0: tuple_0, str_0: tuple_0}
-    module_1.object(**dict_1)
 
 
 @pytest.mark.xfail(strict=True)
