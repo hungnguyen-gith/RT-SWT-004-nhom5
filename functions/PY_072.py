@@ -54,3 +54,4 @@ def start(self, path=None, format=None, outputMode=None, partitionBy=None, query
             return self._sq(self._jwrite.start())
         else:
             return self._sq(self._jwrite.start(path))
+        

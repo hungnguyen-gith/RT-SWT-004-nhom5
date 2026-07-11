@@ -46,3 +46,4 @@ def akima_interpolate(xi, yi, x, der=0, axis=0):
         return P(x, der=der)
     else:
         return [P(x, nu) for nu in der]
+    

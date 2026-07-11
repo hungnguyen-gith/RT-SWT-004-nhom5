@@ -26,3 +26,4 @@ def add_to_capabilities(self, capabilities):
         if self.socksPassword:
             proxy_caps['socksPassword'] = self.socksPassword
         capabilities['proxy'] = proxy_caps
+        
