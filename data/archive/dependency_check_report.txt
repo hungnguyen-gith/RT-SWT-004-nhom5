@@ -1,0 +1,1 @@
+Khong phat hien undefined name nao. Tat ca function OK.

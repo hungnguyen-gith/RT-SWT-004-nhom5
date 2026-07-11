@@ -239,3 +239,16 @@ Thumbs.db
 
 # Large files (thêm nếu data > 100MB)
 # data/raw/
+ 
+# Pynguin virtual environment 
+pynguin_env/ 
+ 
+# Large raw datasets 
+data/raw/*.zip 
+*.zip 
+# Extracted raw dataset (qua lon, tai lai bang script neu can) 
+data/raw/python/ 
+data/raw/*.pkl 
+ 
+# Pynguin temp report (neu lo tao nham trong project root) 
+pynguin-report/ 

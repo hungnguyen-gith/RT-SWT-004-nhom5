@@ -1,0 +1,500 @@
+function_id,language,cc_band,cc_value,sloc,func_name,url,source_code
+PY-066,python,CC5-8,5,15,Block.getitem_block,https://github.com/pandas-dev/pandas/blob/9feb3ad92cc0397a04b665803a49299ee7aa1037/pandas/core/internals/blocks.py#L269-L287,"def getitem_block(self, slicer, new_mgr_locs=None):
+        """"""
+        Perform __getitem__-like, return result as block.
+
+        As of now, only supports slices that preserve dimensionality.
+        """"""
+        if new_mgr_locs is None:
+            if isinstance(slicer, tuple):
+                axis0_slicer = slicer[0]
+            else:
+                axis0_slicer = slicer
+            new_mgr_locs = self.mgr_locs[axis0_slicer]
+
+        new_values = self._slice(slicer)
+
+        if self._validate_ndim and new_values.ndim != self.ndim:
+            raise ValueError(""Only same dim slicing is allowed"")
+
+        return self.make_block_same_class(new_values, new_mgr_locs)"
+PY-067,python,CC5-8,5,42,_akima_interpolate,https://github.com/pandas-dev/pandas/blob/9feb3ad92cc0397a04b665803a49299ee7aa1037/pandas/core/missing.py#L358-L405,"def _akima_interpolate(xi, yi, x, der=0, axis=0):
+    """"""
+    Convenience function for akima interpolation.
+    xi and yi are arrays of values used to approximate some function f,
+    with ``yi = f(xi)``.
+
+    See `Akima1DInterpolator` for details.
+
+    Parameters
+    ----------
+    xi : array_like
+        A sorted list of x-coordinates, of length N.
+    yi :  array_like
+        A 1-D array of real values.  `yi`'s length along the interpolation
+        axis must be equal to the length of `xi`. If N-D array, use axis
+        parameter to select correct axis.
+    x : scalar or array_like
+        Of length M.
+    der : int or list, optional
+        How many derivatives to extract; None for all potentially
+        nonzero derivatives (that is a number equal to the number
+        of points), or a list of derivatives to extract. This number
+        includes the function value as 0th derivative.
+    axis : int, optional
+        Axis in the yi array corresponding to the x-coordinate values.
+
+    See Also
+    --------
+    scipy.interpolate.Akima1DInterpolator
+
+    Returns
+    -------
+    y : scalar or array_like
+        The result, of length R or length M or M by R,
+
+    """"""
+    from scipy import interpolate
+    try:
+        P = interpolate.Akima1DInterpolator(xi, yi, axis=axis)
+    except TypeError:
+        # Scipy earlier than 0.17.0 missing axis
+        P = interpolate.Akima1DInterpolator(xi, yi)
+    if der == 0:
+        return P(x)
+    elif interpolate._isscalar(der):
+        return P(x, der=der)
+    else:
+        return [P(x, nu) for nu in der]"
+PY-068,python,CC5-8,6,17,_check_is_max_context,https://github.com/huggingface/pytorch-pretrained-BERT/blob/b832d5bb8a6dfc5965015b828e577677eace601e/examples/run_squad.py#L400-L434,"def _check_is_max_context(doc_spans, cur_span_index, position):
+    """"""Check if this is the 'max context' doc span for the token.""""""
+
+    # Because of the sliding window approach taken to scoring documents, a single
+    # token can appear in multiple documents. E.g.
+    #  Doc: the man went to the store and bought a gallon of milk
+    #  Span A: the man went to the
+    #  Span B: to the store and bought
+    #  Span C: and bought a gallon of
+    #  ...
+    #
+    # Now the word 'bought' will have two scores from spans B and C. We only
+    # want to consider the score with ""maximum context"", which we define as
+    # the *minimum* of its left and right context (the *sum* of left and
+    # right context will always be the same, of course).
+    #
+    # In the example the maximum context for 'bought' would be span C since
+    # it has 1 left context and 3 right context, while span B has 4 left context
+    # and 0 right context.
+    best_score = None
+    best_span_index = None
+    for (span_index, doc_span) in enumerate(doc_spans):
+        end = doc_span.start + doc_span.length - 1
+        if position < doc_span.start:
+            continue
+        if position > end:
+            continue
+        num_left_context = position - doc_span.start
+        num_right_context = end - position
+        score = min(num_left_context, num_right_context) + 0.01 * doc_span.length
+        if best_score is None or score > best_score:
+            best_score = score
+            best_span_index = span_index
+
+    return cur_span_index == best_span_index"
+PY-069,python,CC5-8,6,13,MPLPlot._apply_axis_properties,https://github.com/pandas-dev/pandas/blob/9feb3ad92cc0397a04b665803a49299ee7aa1037/pandas/plotting/_core.py#L489-L503,"def _apply_axis_properties(self, axis, rot=None, fontsize=None):
+        """""" Tick creation within matplotlib is reasonably expensive and is
+            internally deferred until accessed as Ticks are created/destroyed
+            multiple times per draw. It's therefore beneficial for us to avoid
+            accessing unless we will act on the Tick.
+        """"""
+
+        if rot is not None or fontsize is not None:
+            # rot=0 is a valid setting, hence the explicit None check
+            labels = axis.get_majorticklabels() + axis.get_minorticklabels()
+            for label in labels:
+                if rot is not None:
+                    label.set_rotation(rot)
+                if fontsize is not None:
+                    label.set_fontsize(fontsize)"
+PY-070,python,CC5-8,7,14,construction_error,https://github.com/pandas-dev/pandas/blob/9feb3ad92cc0397a04b665803a49299ee7aa1037/pandas/core/internals/managers.py#L1670-L1687,"def construction_error(tot_items, block_shape, axes, e=None):
+    """""" raise a helpful message about our construction """"""
+    passed = tuple(map(int, [tot_items] + list(block_shape)))
+    # Correcting the user facing error message during dataframe construction
+    if len(passed) <= 2:
+        passed = passed[::-1]
+
+    implied = tuple(len(ax) for ax in axes)
+    # Correcting the user facing error message during dataframe construction
+    if len(implied) <= 2:
+        implied = implied[::-1]
+
+    if passed == implied and e is not None:
+        raise e
+    if block_shape[0] == 0:
+        raise ValueError(""Empty data passed with indices specified."")
+    raise ValueError(""Shape of passed values is {0}, indices imply {1}"".format(
+        passed, implied))"
+PY-071,python,CC5-8,5,14,_rehydrate_skeleton_class,https://github.com/apache/spark/blob/618d6bff71073c8c93501ab7392c3cc579730f0b/python/pyspark/cloudpickle.py#L1146-L1161,"def _rehydrate_skeleton_class(skeleton_class, class_dict):
+    """"""Put attributes from `class_dict` back on `skeleton_class`.
+
+    See CloudPickler.save_dynamic_class for more info.
+    """"""
+    registry = None
+    for attrname, attr in class_dict.items():
+        if attrname == ""_abc_impl"":
+            registry = attr
+        else:
+            setattr(skeleton_class, attrname, attr)
+    if registry is not None:
+        for subclass in registry:
+            skeleton_class.register(subclass)
+
+    return skeleton_class"
+PY-072,python,CC5-8,6,51,DataStreamWriter.start,https://github.com/apache/spark/blob/618d6bff71073c8c93501ab7392c3cc579730f0b/python/pyspark/sql/streaming.py#L1073-L1128,"def start(self, path=None, format=None, outputMode=None, partitionBy=None, queryName=None,
+              **options):
+        """"""Streams the contents of the :class:`DataFrame` to a data source.
+
+        The data source is specified by the ``format`` and a set of ``options``.
+        If ``format`` is not specified, the default data source configured by
+        ``spark.sql.sources.default`` will be used.
+
+        .. note:: Evolving.
+
+        :param path: the path in a Hadoop supported file system
+        :param format: the format used to save
+        :param outputMode: specifies how data of a streaming DataFrame/Dataset is written to a
+                           streaming sink.
+
+            * `append`:Only the new rows in the streaming DataFrame/Dataset will be written to the
+              sink
+            * `complete`:All the rows in the streaming DataFrame/Dataset will be written to the sink
+               every time these is some updates
+            * `update`:only the rows that were updated in the streaming DataFrame/Dataset will be
+              written to the sink every time there are some updates. If the query doesn't contain
+              aggregations, it will be equivalent to `append` mode.
+        :param partitionBy: names of partitioning columns
+        :param queryName: unique name for the query
+        :param options: All other string options. You may want to provide a `checkpointLocation`
+                        for most streams, however it is not required for a `memory` stream.
+
+        >>> sq = sdf.writeStream.format('memory').queryName('this_query').start()
+        >>> sq.isActive
+        True
+        >>> sq.name
+        u'this_query'
+        >>> sq.stop()
+        >>> sq.isActive
+        False
+        >>> sq = sdf.writeStream.trigger(processingTime='5 seconds').start(
+        ...     queryName='that_query', outputMode=""append"", format='memory')
+        >>> sq.name
+        u'that_query'
+        >>> sq.isActive
+        True
+        >>> sq.stop()
+        """"""
+        self.options(**options)
+        if outputMode is not None:
+            self.outputMode(outputMode)
+        if partitionBy is not None:
+            self.partitionBy(partitionBy)
+        if format is not None:
+            self.format(format)
+        if queryName is not None:
+            self.queryName(queryName)
+        if path is None:
+            return self._sq(self._jwrite.start())
+        else:
+            return self._sq(self._jwrite.start(path))"
+PY-073,python,CC5-8,5,8,_trim_front,https://github.com/pandas-dev/pandas/blob/9feb3ad92cc0397a04b665803a49299ee7aa1037/pandas/core/indexes/base.py#L5393-L5400,"def _trim_front(strings):
+    """"""
+    Trims zeros and decimal points.
+    """"""
+    trimmed = strings
+    while len(strings) > 0 and all(x[0] == ' ' for x in trimmed):
+        trimmed = [x[1:] for x in trimmed]
+    return trimmed"
+PY-074,python,CC5-8,6,16,_extend_blocks,https://github.com/pandas-dev/pandas/blob/9feb3ad92cc0397a04b665803a49299ee7aa1037/pandas/core/internals/blocks.py#L3060-L3075,"def _extend_blocks(result, blocks=None):
+    """""" return a new extended blocks, givin the result """"""
+    from pandas.core.internals import BlockManager
+    if blocks is None:
+        blocks = []
+    if isinstance(result, list):
+        for r in result:
+            if isinstance(r, list):
+                blocks.extend(r)
+            else:
+                blocks.append(r)
+    elif isinstance(result, BlockManager):
+        blocks.extend(result.blocks)
+    else:
+        blocks.append(result)
+    return blocks"
+PY-075,python,CC9-12,9,31,BERTDataset.get_corpus_line,https://github.com/huggingface/pytorch-pretrained-BERT/blob/b832d5bb8a6dfc5965015b828e577677eace601e/examples/lm_finetuning/simple_lm_finetuning.py#L159-L194,"def get_corpus_line(self, item):
+        """"""
+        Get one sample from corpus consisting of a pair of two subsequent lines from the same doc.
+        :param item: int, index of sample.
+        :return: (str, str), two subsequent sentences from corpus
+        """"""
+        t1 = """"
+        t2 = """"
+        assert item < self.corpus_lines
+        if self.on_memory:
+            sample = self.sample_to_doc[item]
+            t1 = self.all_docs[sample[""doc_id""]][sample[""line""]]
+            t2 = self.all_docs[sample[""doc_id""]][sample[""line""]+1]
+            # used later to avoid random nextSentence from same doc
+            self.current_doc = sample[""doc_id""]
+            return t1, t2
+        else:
+            if self.line_buffer is None:
+                # read first non-empty line of file
+                while t1 == """" :
+                    t1 = next(self.file).strip()
+                    t2 = next(self.file).strip()
+            else:
+                # use t2 from previous iteration as new t1
+                t1 = self.line_buffer
+                t2 = next(self.file).strip()
+                # skip empty rows that are used for separating documents and keep track of current doc id
+                while t2 == """" or t1 == """":
+                    t1 = next(self.file).strip()
+                    t2 = next(self.file).strip()
+                    self.current_doc = self.current_doc+1
+            self.line_buffer = t2
+
+        assert t1 != """"
+        assert t2 != """"
+        return t1, t2"
+PY-076,python,CC9-12,10,14,_preprocess_sgm,https://github.com/tensorflow/tensor2tensor/blob/272500b6efe353aeb638d2745ed56e519462ca31/tensor2tensor/data_generators/translate.py#L121-L136,"def _preprocess_sgm(line, is_sgm):
+  """"""Preprocessing to strip tags in SGM files.""""""
+  if not is_sgm:
+    return line
+  # In SGM files, remove <srcset ...>, <p>, <doc ...> lines.
+  if line.startswith(""<srcset"") or line.startswith(""</srcset""):
+    return """"
+  if line.startswith(""<doc"") or line.startswith(""</doc""):
+    return """"
+  if line.startswith(""<p>"") or line.startswith(""</p>""):
+    return """"
+  # Strip <seg> tags.
+  line = line.strip()
+  if line.startswith(""<seg"") and line.endswith(""</seg>""):
+    i = line.index("">"")
+    return line[i + 1:-6]"
+PY-077,python,CC9-12,10,27,Proxy.add_to_capabilities,https://github.com/SeleniumHQ/selenium/blob/df40c28b41d4b3953f90eaff84838a9ac052b84a/py/selenium/webdriver/common/proxy.py#L307-L334,"def add_to_capabilities(self, capabilities):
+        """"""
+        Adds proxy information as capability in specified capabilities.
+
+        :Args:
+         - capabilities: The capabilities to which proxy will be added.
+        """"""
+        proxy_caps = {}
+        proxy_caps['proxyType'] = self.proxyType['string']
+        if self.autodetect:
+            proxy_caps['autodetect'] = self.autodetect
+        if self.ftpProxy:
+            proxy_caps['ftpProxy'] = self.ftpProxy
+        if self.httpProxy:
+            proxy_caps['httpProxy'] = self.httpProxy
+        if self.proxyAutoconfigUrl:
+            proxy_caps['proxyAutoconfigUrl'] = self.proxyAutoconfigUrl
+        if self.sslProxy:
+            proxy_caps['sslProxy'] = self.sslProxy
+        if self.noProxy:
+            proxy_caps['noProxy'] = self.noProxy
+        if self.socksProxy:
+            proxy_caps['socksProxy'] = self.socksProxy
+        if self.socksUsername:
+            proxy_caps['socksUsername'] = self.socksUsername
+        if self.socksPassword:
+            proxy_caps['socksPassword'] = self.socksPassword
+        capabilities['proxy'] = proxy_caps"
+PY-078,python,CC9-12,10,12,is_uniform_join_units,https://github.com/pandas-dev/pandas/blob/9feb3ad92cc0397a04b665803a49299ee7aa1037/pandas/core/internals/concat.py#L366-L384,"def is_uniform_join_units(join_units):
+    """"""
+    Check if the join units consist of blocks of uniform type that can
+    be concatenated using Block.concat_same_type instead of the generic
+    concatenate_join_units (which uses `_concat._concat_compat`).
+
+    """"""
+    return (
+        # all blocks need to have the same type
+        all(type(ju.block) is type(join_units[0].block) for ju in join_units) and  # noqa
+        # no blocks that would get missing values (can lead to type upcasts)
+        # unless we're an extension dtype.
+        all(not ju.is_na or ju.block.is_extension for ju in join_units) and
+        # no blocks with indexers (as then the dimensions do not fit)
+        all(not ju.indexers for ju in join_units) and
+        # disregard Panels
+        all(ju.block.ndim <= 2 for ju in join_units) and
+        # only use this path when there is something to concatenate
+        len(join_units) > 1)"
+PY-079,python,CC9-12,9,16,factorial,https://github.com/keon/algorithms/blob/4d6569464a62a75c1357acc97e2dd32ee2f9f4a3/algorithms/maths/factorial.py#L1-L16,"def factorial(n, mod=None):
+    """"""Calculates factorial iteratively.
+    If mod is not None, then return (n! % mod)
+    Time Complexity - O(n)""""""
+    if not (isinstance(n, int) and n >= 0):
+        raise ValueError(""'n' must be a non-negative integer."")
+    if mod is not None and not (isinstance(mod, int) and mod > 0):
+        raise ValueError(""'mod' must be a positive integer"")
+    result = 1
+    if n == 0:
+        return 1
+    for i in range(2, n+1):
+        result *= i
+        if mod:
+            result %= mod
+    return result"
+PY-080,python,CC9-12,11,26,three_sum,https://github.com/keon/algorithms/blob/4d6569464a62a75c1357acc97e2dd32ee2f9f4a3/algorithms/arrays/three_sum.py#L18-L48,"def three_sum(array):
+    """"""
+    :param array: List[int]
+    :return: Set[ Tuple[int, int, int] ]
+    """"""
+    res = set()
+    array.sort()
+    for i in range(len(array) - 2):
+        if i > 0 and array[i] == array[i - 1]:
+            continue
+        l, r = i + 1, len(array) - 1
+        while l < r:
+            s = array[i] + array[l] + array[r]
+            if s > 0:
+                r -= 1
+            elif s < 0:
+                l += 1
+            else:
+                # found three sum
+                res.add((array[i], array[l], array[r]))
+
+                # remove duplicates
+                while l < r and array[l] == array[l + 1]:
+                    l += 1
+
+                while l < r and array[r] == array[r - 1]:
+                    r -= 1
+
+                l += 1
+                r -= 1
+    return res"
+PY-081,python,CC9-12,10,31,cycle_sort,https://github.com/keon/algorithms/blob/4d6569464a62a75c1357acc97e2dd32ee2f9f4a3/algorithms/sort/cycle_sort.py#L1-L46,"def cycle_sort(arr):
+    """"""
+    cycle_sort
+    This is based on the idea that the permutations to be sorted
+    can be decomposed into cycles,
+    and the results can be individually sorted by cycling.
+    
+    reference: https://en.wikipedia.org/wiki/Cycle_sort
+    
+    Average time complexity : O(N^2)
+    Worst case time complexity : O(N^2)
+    """"""
+    len_arr = len(arr)
+    # Finding cycle to rotate.
+    for cur in range(len_arr - 1):
+        item = arr[cur]
+
+        # Finding an indx to put items in.
+        index = cur
+        for i in range(cur + 1, len_arr):
+            if arr[i] < item:
+                index += 1
+
+        # Case of there is not a cycle
+        if index == cur:
+            continue
+
+        # Putting the item immediately right after the duplicate item or on the right.
+        while item == arr[index]:
+            index += 1
+        arr[index], item = item, arr[index]
+
+        # Rotating the remaining cycle.
+        while index != cur:
+
+            # Finding where to put the item.
+            index = cur
+            for i in range(cur + 1, len_arr):
+                if arr[i] < item:
+                    index += 1
+
+            # After item is duplicated, put it in place or put it there.
+            while item == arr[index]:
+                index += 1
+            arr[index], item = item, arr[index]
+    return arr"
+PY-082,python,CC9-12,12,25,World._process_nested_expression,https://github.com/allenai/allennlp/blob/648a36f77db7e45784c047176074f98534c76636/allennlp/semparse/worlds/world.py#L382-L408,"def _process_nested_expression(self, nested_expression) -> str:
+        """"""
+        ``nested_expression`` is the result of parsing a logical form in Lisp format.
+        We process it recursively and return a string in the format that NLTK's ``LogicParser``
+        would understand.
+        """"""
+        expression_is_list = isinstance(nested_expression, list)
+        expression_size = len(nested_expression)
+        if expression_is_list and expression_size == 1 and isinstance(nested_expression[0], list):
+            return self._process_nested_expression(nested_expression[0])
+        elements_are_leaves = [isinstance(element, str) for element in nested_expression]
+        if all(elements_are_leaves):
+            mapped_names = [self._map_name(name) for name in nested_expression]
+        else:
+            mapped_names = []
+            for element, is_leaf in zip(nested_expression, elements_are_leaves):
+                if is_leaf:
+                    mapped_names.append(self._map_name(element))
+                else:
+                    mapped_names.append(self._process_nested_expression(element))
+        if mapped_names[0] == ""\\"":
+            # This means the predicate is lambda. NLTK wants the variable name to not be within parantheses.
+            # Adding parentheses after the variable.
+            arguments = [mapped_names[1]] + [f""({name})"" for name in mapped_names[2:]]
+        else:
+            arguments = [f""({name})"" for name in mapped_names[1:]]
+        return f'({mapped_names[0]} {"" "".join(arguments)})'"
+PY-083,python,CC9-12,10,44,PythonModule.bind,https://github.com/apache/incubator-mxnet/blob/1af29e9c060a4c7d60eeaacba32afdb9a7775ba7/python/mxnet/module/python_module.py#L165-L213,"def bind(self, data_shapes, label_shapes=None, for_training=True,
+             inputs_need_grad=False, force_rebind=False, shared_module=None,
+             grad_req='write'):
+        """"""Binds the symbols to construct executors. This is necessary before one
+        can perform computation with the module.
+
+        Parameters
+        ----------
+        data_shapes : list of (str, tuple)
+            Typically is ``data_iter.provide_data``.
+        label_shapes : list of (str, tuple)
+            Typically is ``data_iter.provide_label``.
+        for_training : bool
+            Default is ``True``. Whether the executors should be bind for training.
+        inputs_need_grad : bool
+            Default is ``False``. Whether the gradients to the input data need to be computed.
+            Typically this is not needed. But this might be needed when implementing composition
+            of modules.
+        force_rebind : bool
+            Default is ``False``. This function does nothing if the executors are already
+            bound. But with this ``True``, the executors will be forced to rebind.
+        shared_module : Module
+            Default is ``None``. This is used in bucketing. When not ``None``, the shared module
+            essentially corresponds to a different bucket -- a module with different symbol
+            but with the same sets of parameters (e.g. unrolled RNNs with different lengths).
+        grad_req : str, list of str, dict of str to str
+            Requirement for gradient accumulation. Can be 'write', 'add', or 'null'
+            (default to 'write').
+            Can be specified globally (str) or for each argument (list, dict).
+        """"""
+        if self.binded and not force_rebind:
+            self.logger.warning('Already bound, ignoring bind()')
+            return
+
+        assert grad_req == 'write', ""Python module only support write gradient""
+        self.for_training = for_training
+        self.inputs_need_grad = inputs_need_grad
+
+        assert len(data_shapes) == len(self._data_names)
+        assert [x[0] for x in data_shapes] == self._data_names
+        self._data_shapes = data_shapes
+
+        self._label_shapes = label_shapes
+        if label_shapes is not None:
+            assert self._label_names is not None
+            assert len(self._label_names) == len(label_shapes)
+            assert [x[0] for x in label_shapes] == self._label_names
+
+        self._output_shapes = self._compute_output_shapes()"
