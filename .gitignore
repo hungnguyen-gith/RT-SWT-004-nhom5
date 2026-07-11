@@ -252,3 +252,7 @@ data/raw/*.pkl
  
 # Pynguin temp report (neu lo tao nham trong project root) 
 pynguin-report/ 
+
+
+#Ignore vscode AI rules
+.github\instructions\codacy.instructions.md

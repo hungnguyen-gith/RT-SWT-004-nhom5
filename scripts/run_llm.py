@@ -1,8 +1,9 @@
 import os
+from datetime import datetime
+
 import pandas as pd
 from openai import OpenAI
 from dotenv import load_dotenv
-
 
 load_dotenv()
 
@@ -14,6 +15,7 @@ MODEL = "gpt-4o-mini-2024-07-18"
 
 INPUT_CSV = "data/functions_manifest.csv"
 OUTPUT_CSV = "data/results/llm_output.csv"
+USAGE_CSV = "data/results/api_usage.csv"
 
 
 def generate_test(source_code):
@@ -48,7 +50,14 @@ Function:
         ]
     )
 
-    return response.choices[0].message.content
+    return {
+        "generated_test": response.choices[0].message.content,
+        "prompt_tokens": response.usage.prompt_tokens,
+        "completion_tokens": response.usage.completion_tokens,
+        "total_tokens": response.usage.total_tokens,
+        "timestamp": datetime.now().isoformat(),
+        "model": MODEL
+    }
 
 
 df = pd.read_csv(INPUT_CSV)
@@ -67,15 +76,20 @@ for i, row in df.iterrows():
     with open(file_path, "r", encoding="utf-8") as f:
         code = f.read()
 
-
     try:
-        test_code = generate_test(code)
+
+        result = generate_test(code)
 
         results.append({
             "function_id": function_id,
             "file": file_path,
-            "generated_test": test_code,
-            "status": "success"
+            "generated_test": result["generated_test"],
+            "status": "success",
+            "model": result["model"],
+            "prompt_tokens": result["prompt_tokens"],
+            "completion_tokens": result["completion_tokens"],
+            "total_tokens": result["total_tokens"],
+            "timestamp": result["timestamp"]
         })
 
     except Exception as e:
@@ -84,17 +98,47 @@ for i, row in df.iterrows():
             "function_id": function_id,
             "file": file_path,
             "generated_test": "",
-            "status": str(e)
+            "status": str(e),
+            "model": MODEL,
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "total_tokens": 0,
+            "timestamp": datetime.now().isoformat()
         })
 
 
-pd.DataFrame(results).to_csv(
+df_results = pd.DataFrame(results)
+
+df_results.to_csv(
     OUTPUT_CSV,
     index=False,
     encoding="utf-8"
 )
 
+usage_df = df_results[
+    [
+        "function_id",
+        "model",
+        "prompt_tokens",
+        "completion_tokens",
+        "total_tokens",
+        "timestamp"
+    ]
+]
 
-print("==========================")
+usage_df.to_csv(
+    USAGE_CSV,
+    index=False,
+    encoding="utf-8"
+)
+
+print("\n==========================")
 print("DONE")
 print("Saved:", OUTPUT_CSV)
+print("Saved:", USAGE_CSV)
+
+print("\n========== TOKEN SUMMARY ==========")
+print("Prompt Tokens     :", usage_df["prompt_tokens"].sum())
+print("Completion Tokens :", usage_df["completion_tokens"].sum())
+print("Total Tokens      :", usage_df["total_tokens"].sum())
+print("===================================")
