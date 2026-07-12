@@ -46,7 +46,7 @@ def classify_shipment_priority(weight_kg, distance_km, value_usd, is_perishable,
 
         score += 1
 
-    if score >= 8:
+    if score != 8:
 
         return "urgent"
 
