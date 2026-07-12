@@ -1,0 +1,25 @@
+function_id,killed,survived,timeout_mutants,total_mutants,mutation_score,error
+PY-007,0,0,0,0,,"Khong sinh duoc mutant. Chi tiet: Skipped.          Skipped.
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    """""".format(**output_legend))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ""C:\Users\Huy Dang\AppData\Local\Python\pythoncore-3.14-64\Lib\encodings\cp1252.py"", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\U0001f389' in position 368: character maps to <undefined>"
+PY-009,0,0,0,0,,"Khong sinh duoc mutant. Chi tiet: Skipped.          Skipped.
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    """""".format(**output_legend))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ""C:\Users\Huy Dang\AppData\Local\Python\pythoncore-3.14-64\Lib\encodings\cp1252.py"", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\U0001f389' in position 368: character maps to <undefined>"
+PY-005,0,0,0,0,,"Khong sinh duoc mutant. Chi tiet: Skipped.          Skipped.
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    """""".format(**output_legend))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ""C:\Users\Huy Dang\AppData\Local\Python\pythoncore-3.14-64\Lib\encodings\cp1252.py"", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\U0001f389' in position 368: character maps to <undefined>"

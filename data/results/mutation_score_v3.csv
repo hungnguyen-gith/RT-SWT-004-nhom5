@@ -1,0 +1,4 @@
+function_id,killed,survived,timeout_mutants,total_mutants,mutation_score,error
+PY-007,8,0,0,8,100.0,
+PY-009,0,0,0,0,,Khong sinh duoc mutant nao (co the source qua don gian hoac loi config)
+PY-005,0,0,0,0,,Khong sinh duoc mutant nao (co the source qua don gian hoac loi config)

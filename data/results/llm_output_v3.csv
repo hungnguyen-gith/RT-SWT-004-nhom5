@@ -1,0 +1,650 @@
+function_id,model,status,repair_attempts,source_imported,branch_coverage,test_file,cost_usd,elapsed_s,error
+PY-007,gpt-4o-mini-2024-07-18,ok,0,True,100.0,generated_tests_v3\PY-007_test.py,0.004386,12.33,
+PY-009,gpt-4o-mini-2024-07-18,ok,0,True,100.0,generated_tests_v3\PY-009_test.py,0.006552,7.42,
+PY-005,gpt-4o-mini-2024-07-18,ok_but_not_verified,4,True,64.70588235294117,generated_tests_v3\PY-005_test.py,0.001933,27.71,".F...F...                                                                [100%]
+================================== FAILURES ===================================
+________________________ test_take_more_than_available ________________________
+tmp_check_PY_005_test.py:21: in test_take_more_than_available
+    assert take(stub, 15) == [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+E   assert [0, 1, 2, 3, 4, 5, ...] == [0, 1, 2, 3, 4, 5, ...]
+E     
+E     Left contains 5 more items, first extra item: 0
+E     Use -v to get more diff
+__________________________ test_take_with_large_num ___________________________
+tmp_check_PY_005_test.py:37: in test_take_with_large_num
+    assert take(stub, 100) == [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+E   assert [0, 1, 2, 3, 4, 5, ...] == [0, 1, 2, 3, 4, 5, ...]
+E     
+E     Left contains 40 more items, first extra item: 0
+E     Use -v to get more diff
+=========================== short test summary info ===========================
+FAILED tmp_check_PY_005_test.py::test_take_more_than_available - assert [0, 1...
+FAILED tmp_check_PY_005_test.py::test_take_with_large_num - assert [0, 1, 2, ...
+2 failed, 7 passed in 0.07s"
+PY-006,gpt-4o-mini-2024-07-18,ok,0,True,94.11764705882354,generated_tests_v3\PY-006_test.py,0.002323,8.13,
+PY-008,gpt-4o-mini-2024-07-18,ok_but_not_verified,4,True,95.23809523809524,generated_tests_v3\PY-008_test.py,0.004086,33.96,"...F...                                                                  [100%]
+================================== FAILURES ===================================
+____________________ test_inherit_doc_with_private_method _____________________
+tmp_check_PY_008_test.py:62: in test_inherit_doc_with_private_method
+    assert TestClass._private_method.__doc__ is None
+E   AssertionError: assert 'Private method documentation.' is None
+E    +  where 'Private method documentation.' = <function test_inherit_doc_with_private_method.<locals>.TestClass._private_method at 0x00000156D321A820>.__doc__
+E    +    where <function test_inherit_doc_with_private_method.<locals>.TestClass._private_method at 0x00000156D321A820> = <class 'tmp_check_PY_008_test.test_inherit_doc_with_private_method.<locals>.TestClass'>._private_method
+=========================== short test summary info ===========================
+FAILED tmp_check_PY_008_test.py::test_inherit_doc_with_private_method - Asser...
+1 failed, 6 passed in 0.07s"
+PY-011,gpt-4o-mini-2024-07-18,ok_but_not_verified,4,True,100.0,generated_tests_v3\PY-011_test.py,0.006585,45.43,"_________ test_get_top_cluster_params_empty_input ___________________
+tmp_check_PY_011_test.py:60: in test_get_top_cluster_params_empty_input
+    top_clusters, centroids, mol_indices, data_top_clusters = get_top_cluster_params(stub, X, top)
+                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+functions\PY_011.py:57: in get_top_cluster_params
+    centroids = np.array([self._calc_centroid(X, c) for c in top_clusters])
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^
+tmp_check_PY_011_test.py:10: in _calc_centroid
+    return np.mean(X[cluster], axis=0)
+                   ^^^^^^^^^^
+E   IndexError: index 6 is out of bounds for axis 0 with size 1
+=========================== short test summary info ===========================
+FAILED tmp_check_PY_011_test.py::test_get_top_cluster_params_normal - assert ...
+FAILED tmp_check_PY_011_test.py::test_get_top_cluster_params_edge_case - Inde...
+FAILED tmp_check_PY_011_test.py::test_get_top_cluster_params_invalid_top - as...
+FAILED tmp_check_PY_011_test.py::test_get_top_cluster_params_large_top - Inde...
+FAILED tmp_check_PY_011_test.py::test_get_top_cluster_params_empty_input - In...
+5 failed in 0.15s"
+PY-015,gpt-4o-mini-2024-07-18,ok_but_not_verified,4,True,96.7741935483871,generated_tests_v3\PY-015_test.py,0.008907,39.62,"..F...                                                                   [100%]
+================================== FAILURES ===================================
+_______________ test_check_cluster_structure_empty_subclusters ________________
+tmp_check_PY_015_test.py:46: in test_check_cluster_structure_empty_subclusters
+    check_cluster_structure(brc)
+functions\PY_015.py:47: in check_cluster_structure
+    if msg:
+       ^^^
+E   UnboundLocalError: cannot access local variable 'msg' where it is not associated with a value
+---------------------------- Captured stdout call -----------------------------
+Check to ensure all N_j values are identical to all len(mol_j) values passed.
+Total number of molecules: 0
+=========================== short test summary info ===========================
+FAILED tmp_check_PY_015_test.py::test_check_cluster_structure_empty_subclusters
+1 failed, 5 passed in 0.06s"
+PY-016,gpt-4o-mini-2024-07-18,ok_but_not_verified,4,True,79.3103448275862,generated_tests_v3\PY-016_test.py,0.012086,57.34,"6_test.py:79: in test_reindex_indexer_no_copy
+    assert result is stub  # Should return the same instance if copy is False
+    ^^^^^^^^^^^^^^^^^^^^^
+E   assert <tmp_check_PY_016_test.Stub object at 0x00000207B59DB550> is <tmp_check_PY_016_test.Stub object at 0x00000207B59897B0>
+____________ test_reindex_indexer_with_none_indexer_and_same_axis _____________
+tmp_check_PY_016_test.py:85: in test_reindex_indexer_with_none_indexer_and_same_axis
+    assert result is stub  # Should return the same instance if axes are the same
+    ^^^^^^^^^^^^^^^^^^^^^
+E   assert <tmp_check_PY_016_test.Stub object at 0x00000207B6A9DA90> is <tmp_check_PY_016_test.Stub object at 0x00000207B6AAC050>
+=========================== short test summary info ===========================
+FAILED tmp_check_PY_016_test.py::test_reindex_indexer_with_indexer - Attribut...
+FAILED tmp_check_PY_016_test.py::test_reindex_indexer_allow_dups - TypeError:...
+FAILED tmp_check_PY_016_test.py::test_reindex_indexer_fill_value - AttributeE...
+FAILED tmp_check_PY_016_test.py::test_reindex_indexer_no_copy - assert <tmp_c...
+FAILED tmp_check_PY_016_test.py::test_reindex_indexer_with_none_indexer_and_same_axis
+5 failed, 3 passed in 0.17s"
+PY-020,gpt-4o-mini-2024-07-18,ok_but_not_verified,4,True,5.2631578947368425,generated_tests_v3\PY-020_test.py,0.014173,33.58,"=================================== ERRORS ====================================
+__________________ ERROR collecting tmp_check_PY_020_test.py __________________
+ImportError while importing test module 'C:\Users\Huy Dang\Downloads\RT-SWT-004-nhom5\tmp_check_PY_020_test.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+..\..\AppData\Local\Python\pythoncore-3.14-64\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tmp_check_PY_020_test.py:1: in <module>
+    from functions.PY_020 import tsne_plot
+functions\PY_020.py:3: in <module>
+    import matplotlib
+E   ModuleNotFoundError: No module named 'matplotlib'
+=========================== short test summary info ===========================
+ERROR tmp_check_PY_020_test.py
+!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+1 error in 0.19s"
+PY-021,gpt-4o-mini-2024-07-18,ok_but_not_verified,4,True,4.3478260869565215,generated_tests_v3\PY-021_test.py,0.015963,25.09,"=================================== ERRORS ====================================
+__________________ ERROR collecting tmp_check_PY_021_test.py __________________
+ImportError while importing test module 'C:\Users\Huy Dang\Downloads\RT-SWT-004-nhom5\tmp_check_PY_021_test.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+..\..\AppData\Local\Python\pythoncore-3.14-64\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tmp_check_PY_021_test.py:1: in <module>
+    from functions.PY_021 import mol_relocation_plots
+functions\PY_021.py:1: in <module>
+    import plotly.graph_objects as go
+E   ModuleNotFoundError: No module named 'plotly'
+=========================== short test summary info ===========================
+ERROR tmp_check_PY_021_test.py
+!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+1 error in 0.10s"
+PY-023,gpt-4o-mini-2024-07-18,ok_but_not_verified,4,True,10.0,generated_tests_v3\PY-023_test.py,0.01882,51.44,"=================================== ERRORS ====================================
+__________________ ERROR collecting tmp_check_PY_023_test.py __________________
+ImportError while importing test module 'C:\Users\Huy Dang\Downloads\RT-SWT-004-nhom5\tmp_check_PY_023_test.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+..\..\AppData\Local\Python\pythoncore-3.14-64\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tmp_check_PY_023_test.py:1: in <module>
+    from functions.PY_023 import init_plot
+functions\PY_023.py:7: in <module>
+    import matplotlib.pyplot as plt
+E   ModuleNotFoundError: No module named 'matplotlib'
+=========================== short test summary info ===========================
+ERROR tmp_check_PY_023_test.py
+!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+1 error in 0.57s"
+PY-025,gpt-4o-mini-2024-07-18,ok_but_not_verified,4,True,95.45454545454544,generated_tests_v3\PY-025_test.py,0.022476,62.2,"________________
+tmp_check_PY_025_test.py:77: in test_build_tf_to_pytorch_map_with_transformer
+    result = build_tf_to_pytorch_map(model, config)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+functions\PY_025.py:131: in build_tf_to_pytorch_map
+    r_r_list = [model.r_r_bias]
+                ^^^^^^^^^^^^^^
+E   AttributeError: 'StubTransformer' object has no attribute 'r_r_bias'
+______________ test_build_tf_to_pytorch_map_without_transformer _______________
+tmp_check_PY_025_test.py:114: in test_build_tf_to_pytorch_map_without_transformer
+    result = build_tf_to_pytorch_map(model, config)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+functions\PY_025.py:67: in build_tf_to_pytorch_map
+    for i, (embed_l, proj_l) in enumerate(zip(model.word_emb.emb_layers, model.word_emb.emb_projs)):
+                                              ^^^^^^^^^^^^^^
+E   AttributeError: 'NoneType' object has no attribute 'word_emb'
+=========================== short test summary info ===========================
+FAILED tmp_check_PY_025_test.py::test_build_tf_to_pytorch_map_with_transformer
+FAILED tmp_check_PY_025_test.py::test_build_tf_to_pytorch_map_without_transformer
+2 failed, 2 passed in 0.07s"
+PY-028,gpt-4o-mini-2024-07-18,ok,3,True,96.55172413793105,generated_tests_v3\PY-028_test.py,0.025887,60.95,
+PY-037,gpt-4o-mini-2024-07-18,ok_but_not_verified,4,True,63.63636363636363,generated_tests_v3\PY-037_test.py,0.030118,87.52,"...F                                                                     [100%]
+================================== FAILURES ===================================
+_______________________ test_update_with_invalid_input ________________________
+tmp_check_PY_037_test.py:123: in test_update_with_invalid_input
+    with pytest.raises(TypeError):
+         ^^^^^^^^^^^^^^^^^^^^^^^^
+E   Failed: DID NOT RAISE TypeError
+=========================== short test summary info ===========================
+FAILED tmp_check_PY_037_test.py::test_update_with_invalid_input - Failed: DID...
+1 failed, 3 passed in 0.14s"
+PY-042,gpt-4o-mini-2024-07-18,ok_but_not_verified,4,True,80.85106382978724,generated_tests_v3\PY-042_test.py,0.033525,60.33,"ain_with_nan_advantages
+tmp_check_PY_042_test.py::test_train_edge_case_empty_buffer
+tmp_check_PY_042_test.py::test_train_invalid_input
+  C:\Users\Huy Dang\Downloads\RT-SWT-004-nhom5\functions\PY_042.py:37: RuntimeWarning: Mean of empty slice
+    mean_advantages = np.nanmean(advantages_copy)
+
+tmp_check_PY_042_test.py::test_train_with_nan_advantages
+tmp_check_PY_042_test.py::test_train_edge_case_empty_buffer
+tmp_check_PY_042_test.py::test_train_invalid_input
+  C:\Users\Huy Dang\Downloads\RT-SWT-004-nhom5\venv\Lib\site-packages\numpy\lib\_nanfunctions_impl.py:1997: RuntimeWarning: Degrees of freedom <= 0 for slice.
+    var = nanvar(a, axis=axis, dtype=dtype, out=out, ddof=ddof,
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tmp_check_PY_042_test.py::test_train_normal_case - AttributeError: 'fl...
+FAILED tmp_check_PY_042_test.py::test_train_with_popart - AttributeError: 'fl...
+FAILED tmp_check_PY_042_test.py::test_train_with_nan_advantages - AttributeEr...
+FAILED tmp_check_PY_042_test.py::test_train_invalid_input - Failed: DID NOT R...
+4 failed, 1 passed, 6 warnings in 0.17s"
+PY-043,gpt-4o-mini-2024-07-18,ok,2,True,95.45454545454544,generated_tests_v3\PY-043_test.py,0.034664,21.45,
+PY-048,gpt-4o-mini-2024-07-18,ok_but_not_verified,4,True,94.11764705882354,generated_tests_v3\PY-048_test.py,0.037973,60.18,"_obj = fkmany_class(**orm_kwargs)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   TypeError: FkManyClass() takes no arguments
+_________________ test_get_fk_many_from_list_invalid_key_attr _________________
+tmp_check_PY_048_test.py:70: in test_get_fk_many_from_list_invalid_key_attr
+    result = get_fk_many_from_list(Stub(), object_list, fkmany, FkManyClass, key_attr)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+functions\PY_048.py:21: in get_fk_many_from_list
+    fkmany = [o for o in fkmany if getattr(o, key_attr) in object_keys]
+                                   ^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: 'Stub' object has no attribute 'invalid_key'
+=========================== short test summary info ===========================
+FAILED tmp_check_PY_048_test.py::test_get_fk_many_from_list_update_existing_fks
+FAILED tmp_check_PY_048_test.py::test_get_fk_many_from_list_create_new_fks - ...
+FAILED tmp_check_PY_048_test.py::test_get_fk_many_from_list_remove_deleted_fks
+FAILED tmp_check_PY_048_test.py::test_get_fk_many_from_list_no_fks - TypeErro...
+FAILED tmp_check_PY_048_test.py::test_get_fk_many_from_list_invalid_key_attr
+5 failed, 3 passed in 0.08s"
+PY-049,gpt-4o-mini-2024-07-18,ok_but_not_verified,4,True,100.0,generated_tests_v3\PY-049_test.py,0.039486,31.09,"..F                                                                      [100%]
+================================== FAILURES ===================================
+_____________________ test_merge_intervals_invalid_input ______________________
+tmp_check_PY_049_test.py:19: in test_merge_intervals_invalid_input
+    with pytest.raises(TypeError):
+         ^^^^^^^^^^^^^^^^^^^^^^^^
+E   Failed: DID NOT RAISE TypeError
+=========================== short test summary info ===========================
+FAILED tmp_check_PY_049_test.py::test_merge_intervals_invalid_input - Failed:...
+1 failed, 2 passed in 0.07s"
+PY-050,gpt-4o-mini-2024-07-18,ok_but_not_verified,4,True,100.0,generated_tests_v3\PY-050_test.py,0.042034,51.27,"....F.F.                                                                 [100%]
+================================== FAILURES ===================================
+____________________ test_schedule_tasks_invalid_duration _____________________
+tmp_check_PY_050_test.py:37: in test_schedule_tasks_invalid_duration
+    assert len(result[0]) == 0
+E   AssertionError: assert 1 == 0
+E    +  where 1 = len([{'id': 2, 'duration': 2, 'priority': 2}])
+______________________ test_schedule_tasks_high_priority ______________________
+tmp_check_PY_050_test.py:61: in test_schedule_tasks_high_priority
+    assert len(result[1]) == 1 and result[1][0][""id""] == 1  # Remaining task
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AssertionError: assert (1 == 1 and 3 == 1)
+E    +  where 1 = len([{'id': 3, 'duration': 3, 'priority': 2}])
+=========================== short test summary info ===========================
+FAILED tmp_check_PY_050_test.py::test_schedule_tasks_invalid_duration - Asser...
+FAILED tmp_check_PY_050_test.py::test_schedule_tasks_high_priority - Assertio...
+2 failed, 6 passed in 0.10s"
+PY-051,gpt-4o-mini-2024-07-18,ok_but_not_verified,4,True,91.17647058823528,generated_tests_v3\PY-051_test.py,0.04393,45.61,"_____________
+tmp_check_PY_051_test.py:29: in test_compute_discount_with_coupon_and_first_order
+    assert compute_discount(200, ""silver"", coupon=""VIP"", is_first_order=True) == 135.0
+E   AssertionError: assert 150.0 == 135.0
+E    +  where 150.0 = compute_discount(200, 'silver', coupon='VIP', is_first_order=True)
+________________ test_compute_discount_exceeding_max_discount _________________
+tmp_check_PY_051_test.py:33: in test_compute_discount_exceeding_max_discount
+    assert compute_discount(200, ""silver"", coupon=""VIP"", is_first_order=True) == 100.0
+E   AssertionError: assert 150.0 == 100.0
+E    +  where 150.0 = compute_discount(200, 'silver', coupon='VIP', is_first_order=True)
+=========================== short test summary info ===========================
+FAILED tmp_check_PY_051_test.py::test_compute_discount_with_coupon_sale - Ass...
+FAILED tmp_check_PY_051_test.py::test_compute_discount_with_coupon_vip - Asse...
+FAILED tmp_check_PY_051_test.py::test_compute_discount_first_order - Assertio...
+FAILED tmp_check_PY_051_test.py::test_compute_discount_with_coupon_and_first_order
+FAILED tmp_check_PY_051_test.py::test_compute_discount_exceeding_max_discount
+5 failed, 7 passed in 0.12s"
+PY-052,gpt-4o-mini-2024-07-18,ok_but_not_verified,4,True,100.0,generated_tests_v3\PY-052_test.py,0.045733,35.54,".............F..                                                         [100%]
+================================== FAILURES ===================================
+_________________ test_edge_case_exact_length_without_special _________________
+tmp_check_PY_052_test.py:43: in test_edge_case_exact_length_without_special
+    assert validate_password(""A1valid"", min_length=8, require_digit=True, require_upper=True, require_special=False) is True
+E   AssertionError: assert False is True
+E    +  where False = validate_password('A1valid', min_length=8, require_digit=True, require_upper=True, require_special=False)
+=========================== short test summary info ===========================
+FAILED tmp_check_PY_052_test.py::test_edge_case_exact_length_without_special
+1 failed, 15 passed in 0.09s"
+PY-053,gpt-4o-mini-2024-07-18,ok_but_not_verified,4,True,94.28571428571428,generated_tests_v3\PY-053_test.py,0.048143,44.78,"country='regional')
+_____________________ test_calculate_shipping_edge_cases ______________________
+tmp_check_PY_053_test.py:40: in test_calculate_shipping_edge_cases
+    assert calculate_shipping(1, 100) == 5.0
+E   assert 5.5 == 5.0
+E    +  where 5.5 = calculate_shipping(1, 100)
+____________________ test_calculate_shipping_invalid_input ____________________
+tmp_check_PY_053_test.py:52: in test_calculate_shipping_invalid_input
+    with pytest.raises(TypeError):
+         ^^^^^^^^^^^^^^^^^^^^^^^^
+E   Failed: DID NOT RAISE TypeError
+=========================== short test summary info ===========================
+FAILED tmp_check_PY_053_test.py::test_calculate_shipping_normal - assert 10.0...
+FAILED tmp_check_PY_053_test.py::test_calculate_shipping_express - assert 15....
+FAILED tmp_check_PY_053_test.py::test_calculate_shipping_fragile - assert 9.5...
+FAILED tmp_check_PY_053_test.py::test_calculate_shipping_international - Asse...
+FAILED tmp_check_PY_053_test.py::test_calculate_shipping_regional - Assertion...
+FAILED tmp_check_PY_053_test.py::test_calculate_shipping_edge_cases - assert ...
+FAILED tmp_check_PY_053_test.py::test_calculate_shipping_invalid_input - Fail...
+7 failed in 0.12s"
+PY-054,gpt-4o-mini-2024-07-18,ok,2,True,97.05882352941175,generated_tests_v3\PY-054_test.py,0.049607,28.74,
+PY-055,gpt-4o-mini-2024-07-18,ok_but_not_verified,4,True,97.36842105263158,generated_tests_v3\PY-055_test.py,0.051072,29.89,"__________ test_normalize_path_with_double_dot_segments _________________
+tmp_check_PY_055_test.py:14: in test_normalize_path_with_double_dot_segments
+    assert normalize_path(""/a/b/../c"") == ""/a/c""
+E   AssertionError: assert '/a/b/../c' == '/a/c'
+E     
+E     - /a/c
+E     + /a/b/../c
+__________________ test_normalize_path_with_non_strict_mode ___________________
+tmp_check_PY_055_test.py:21: in test_normalize_path_with_non_strict_mode
+    assert normalize_path(""/a/b/../c"", strict=False) == ""/a/c""
+E   AssertionError: assert '/a/b/../c' == '/a/c'
+E     
+E     - /a/c
+E     + /a/b/../c
+__________________ test_normalize_path_with_only_double_dots __________________
+tmp_check_PY_055_test.py:41: in test_normalize_path_with_only_double_dots
+    assert normalize_path("".."") == ""/""
+E   AssertionError: assert '/..' == '/'
+E     
+E     - /
+E     + /..
+=========================== short test summary info ===========================
+FAILED tmp_check_PY_055_test.py::test_normalize_path_with_double_dot_segments
+FAILED tmp_check_PY_055_test.py::test_normalize_path_with_non_strict_mode - A...
+FAILED tmp_check_PY_055_test.py::test_normalize_path_with_only_double_dots - ...
+3 failed, 10 passed in 0.08s"
+PY-056,gpt-4o-mini-2024-07-18,ok_but_not_verified,4,True,53.57142857142857,generated_tests_v3\PY-056_test.py,0.05275,32.61,"F                                                                        [100%]
+================================== FAILURES ===================================
+_______________________ test_classify_shipment_priority _______________________
+tmp_check_PY_056_test.py:5: in test_classify_shipment_priority
+    assert classify_shipment_priority(5, 100, 50, False, False, ""bronze"") == ""low""
+E   AssertionError: assert 'normal' == 'low'
+E     
+E     - low
+E     + normal
+=========================== short test summary info ===========================
+FAILED tmp_check_PY_056_test.py::test_classify_shipment_priority - AssertionE...
+1 failed in 0.09s"
+PY-057,gpt-4o-mini-2024-07-18,ok,0,True,93.87755102040816,generated_tests_v3\PY-057_test.py,0.053146,7.43,
+PY-058,gpt-4o-mini-2024-07-18,ok_but_not_verified,4,True,93.1818181818182,generated_tests_v3\PY-058_test.py,0.056272,59.6,"0, 10000, 1, 30, True) == False
+E   assert True == False
+E    +  where True = compute_loan_eligibility(50000, 600, 10000, 1, 30, True)
+____________ test_loan_eligibility_employment_years_two_low_credit ____________
+tmp_check_PY_058_test.py:37: in test_loan_eligibility_employment_years_two_low_credit
+    assert compute_loan_eligibility(50000, 600, 10000, 2, 30, True) == False
+E   assert True == False
+E    +  where True = compute_loan_eligibility(50000, 600, 10000, 2, 30, True)
+___________ test_loan_eligibility_employment_years_three_low_credit ___________
+tmp_check_PY_058_test.py:43: in test_loan_eligibility_employment_years_three_low_credit
+    assert compute_loan_eligibility(50000, 600, 10000, 3, 30, True) == False
+E   assert True == False
+E    +  where True = compute_loan_eligibility(50000, 600, 10000, 3, 30, True)
+=========================== short test summary info ===========================
+FAILED tmp_check_PY_058_test.py::test_loan_eligibility_employment_years_one_low_credit
+FAILED tmp_check_PY_058_test.py::test_loan_eligibility_employment_years_two_low_credit
+FAILED tmp_check_PY_058_test.py::test_loan_eligibility_employment_years_three_low_credit
+3 failed, 18 passed in 0.24s"
+PY-060,gpt-4o-mini-2024-07-18,ok_but_not_verified,4,True,91.83673469387756,generated_tests_v3\PY-060_test.py,0.058779,49.82,"- D
+E     + B
+_________________________ test_grade_exam_edge_cases __________________________
+tmp_check_PY_060_test.py:41: in test_grade_exam_edge_cases
+    assert grade_exam(59, 90, False, 0, False, False) == ""F""
+E   AssertionError: assert 'D' == 'F'
+E     
+E     - F
+E     + D
+________________________ test_grade_exam_invalid_input ________________________
+tmp_check_PY_060_test.py:49: in test_grade_exam_invalid_input
+    with pytest.raises(TypeError):
+         ^^^^^^^^^^^^^^^^^^^^^^^^
+E   Failed: DID NOT RAISE TypeError
+=========================== short test summary info ===========================
+FAILED tmp_check_PY_060_test.py::test_grade_exam_normal_cases - AssertionErro...
+FAILED tmp_check_PY_060_test.py::test_grade_exam_with_attendance_penalty - As...
+FAILED tmp_check_PY_060_test.py::test_grade_exam_with_extra_credit - Assertio...
+FAILED tmp_check_PY_060_test.py::test_grade_exam_makeup_exam - AssertionError...
+FAILED tmp_check_PY_060_test.py::test_grade_exam_disability_accommodation - A...
+FAILED tmp_check_PY_060_test.py::test_grade_exam_edge_cases - AssertionError:...
+FAILED tmp_check_PY_060_test.py::test_grade_exam_invalid_input - Failed: DID ...
+7 failed, 1 passed in 0.13s"
+PY-062,gpt-4o-mini-2024-07-18,ok_but_not_verified,4,True,95.23809523809524,generated_tests_v3\PY-062_test.py,0.061224,46.15,".F.....                                                                  [100%]
+================================== FAILURES ===================================
+____________ test_validate_form_submission_missing_required_field _____________
+tmp_check_PY_062_test.py:32: in test_validate_form_submission_missing_required_field
+    assert errors == [""password is required""]
+E   AssertionError: assert ['email is re... is required'] == ['password is required']
+E     
+E     At index 0 diff: 'email is required' != 'password is required'
+E     Left contains one more item: 'password is required'
+E     Use -v to get more diff
+=========================== short test summary info ===========================
+FAILED tmp_check_PY_062_test.py::test_validate_form_submission_missing_required_field
+1 failed, 6 passed in 0.07s"
+PY-063,gpt-4o-mini-2024-07-18,ok_but_not_verified,4,True,95.91836734693878,generated_tests_v3\PY-063_test.py,0.063703,55.74,"_PY_063_test.py:43: in test_compute_tax_bracket_high_income_married
+    assert compute_tax_bracket(200000, ""married"", 50000, 0, False) == 52500.0
+E   AssertionError: assert 37500.0 == 52500.0
+E    +  where 37500.0 = compute_tax_bracket(200000, 'married', 50000, 0, False)
+=========================== short test summary info ===========================
+FAILED tmp_check_PY_063_test.py::test_compute_tax_bracket_single_no_dependents
+FAILED tmp_check_PY_063_test.py::test_compute_tax_bracket_single_with_dependents
+FAILED tmp_check_PY_063_test.py::test_compute_tax_bracket_single_senior - Ass...
+FAILED tmp_check_PY_063_test.py::test_compute_tax_bracket_single_senior_with_dependents
+FAILED tmp_check_PY_063_test.py::test_compute_tax_bracket_married_no_dependents
+FAILED tmp_check_PY_063_test.py::test_compute_tax_bracket_married_with_dependents
+FAILED tmp_check_PY_063_test.py::test_compute_tax_bracket_married_senior - As...
+FAILED tmp_check_PY_063_test.py::test_compute_tax_bracket_married_senior_with_dependents
+FAILED tmp_check_PY_063_test.py::test_compute_tax_bracket_no_deductions - Ass...
+FAILED tmp_check_PY_063_test.py::test_compute_tax_bracket_high_income_married
+10 failed, 8 passed in 0.11s"
+PY-064,gpt-4o-mini-2024-07-18,ok_but_not_verified,4,True,92.3076923076923,generated_tests_v3\PY-064_test.py,0.066607,64.63," and low anomalies
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AssertionError: assert [] == [(2, 'high'), (5, 'low')]
+E     
+E     Right contains 2 more items, first extra item: (2, 'high')
+E     Use -v to get more diff
+__________________ test_detect_anomaly_allow_negative_spike ___________________
+tmp_check_PY_064_test.py:91: in test_detect_anomaly_allow_negative_spike
+    assert result == [(2, ""high"")]  # Should only detect high anomaly
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AssertionError: assert [] == [(2, 'high')]
+E     
+E     Right contains one more item: (2, 'high')
+E     Use -v to get more diff
+=========================== short test summary info ===========================
+FAILED tmp_check_PY_064_test.py::test_detect_anomaly_normal_cases - Assertion...
+FAILED tmp_check_PY_064_test.py::test_detect_anomaly_edge_cases - AssertionEr...
+FAILED tmp_check_PY_064_test.py::test_detect_anomaly_invalid_input - Assertio...
+FAILED tmp_check_PY_064_test.py::test_detect_anomaly_smoothing - AssertionErr...
+FAILED tmp_check_PY_064_test.py::test_detect_anomaly_reset_on_recovery - Asse...
+FAILED tmp_check_PY_064_test.py::test_detect_anomaly_allow_negative_spike - A...
+6 failed in 0.07s"
+PY-065,gpt-4o-mini-2024-07-18,ok,0,True,88.0952380952381,generated_tests_v3\PY-065_test.py,0.067044,8.73,
+PY-066,gpt-4o-mini-2024-07-18,ok_but_not_verified,4,True,68.75,generated_tests_v3\PY-066_test.py,0.069114,36.31,"                     ^^^^^^^^^^^^^^^
+E   AttributeError: 'list' object has no attribute 'ndim'
+________________________ test_getitem_block_full_slice ________________________
+tmp_check_PY_066_test.py:55: in test_getitem_block_full_slice
+    result = getitem_block(stub, slice(None))
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+functions\PY_066.py:31: in getitem_block
+    if self._validate_ndim and new_values.ndim != self.ndim:
+                               ^^^^^^^^^^^^^^^
+E   AttributeError: 'list' object has no attribute 'ndim'
+=========================== short test summary info ===========================
+FAILED tmp_check_PY_066_test.py::test_getitem_block_single_index - AttributeE...
+FAILED tmp_check_PY_066_test.py::test_getitem_block_slice - AttributeError: '...
+FAILED tmp_check_PY_066_test.py::test_getitem_block_tuple - AttributeError: '...
+FAILED tmp_check_PY_066_test.py::test_getitem_block_invalid_ndim - AttributeE...
+FAILED tmp_check_PY_066_test.py::test_getitem_block_none_new_mgr_locs - Attri...
+FAILED tmp_check_PY_066_test.py::test_getitem_block_empty_slice - AttributeEr...
+FAILED tmp_check_PY_066_test.py::test_getitem_block_full_slice - AttributeErr...
+7 failed in 0.07s"
+PY-067,gpt-4o-mini-2024-07-18,ok_but_not_verified,4,True,13.333333333333334,generated_tests_v3\PY-067_test.py,0.071771,52.55,"olate(xi, yi, x)
+functions\PY_067.py:73: in akima_interpolate
+    from scipy import interpolate
+E   ModuleNotFoundError: No module named 'scipy'
+__________________ test_akima_interpolate_non_numeric_input ___________________
+tmp_check_PY_067_test.py:67: in test_akima_interpolate_non_numeric_input
+    akima_interpolate(xi, yi, x)
+functions\PY_067.py:73: in akima_interpolate
+    from scipy import interpolate
+E   ModuleNotFoundError: No module named 'scipy'
+=========================== short test summary info ===========================
+FAILED tmp_check_PY_067_test.py::test_akima_interpolate_basic - ModuleNotFoun...
+FAILED tmp_check_PY_067_test.py::test_akima_interpolate_single_value - Module...
+FAILED tmp_check_PY_067_test.py::test_akima_interpolate_derivative - ModuleNo...
+FAILED tmp_check_PY_067_test.py::test_akima_interpolate_multiple_derivatives
+FAILED tmp_check_PY_067_test.py::test_akima_interpolate_invalid_xi_length - M...
+FAILED tmp_check_PY_067_test.py::test_akima_interpolate_invalid_x - ModuleNot...
+FAILED tmp_check_PY_067_test.py::test_akima_interpolate_empty_input - ModuleN...
+FAILED tmp_check_PY_067_test.py::test_akima_interpolate_non_numeric_input - M...
+8 failed in 0.15s"
+PY-068,gpt-4o-mini-2024-07-18,ok,0,True,95.83333333333331,generated_tests_v3\PY-068_test.py,0.072301,12.59,
+PY-069,gpt-4o-mini-2024-07-18,ok,0,True,100.0,generated_tests_v3\PY-069_test.py,0.0729,15.01,
+PY-070,gpt-4o-mini-2024-07-18,ok_but_not_verified,4,True,80.0,generated_tests_v3\PY-070_test.py,0.074489,30.11,"ues is (1, 2, 3), indices imply (2, 2)'
+_________________ test_construction_error_invalid_block_shape _________________
+tmp_check_PY_070_test.py:31: in test_construction_error_invalid_block_shape
+    with pytest.raises(ValueError, match=""Shape of passed values is (0, 2), indices imply (2, 2)""):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AssertionError: Regex pattern did not match.
+E     Expected regex: 'Shape of passed values is (0, 2), indices imply (2, 2)'
+E     Actual message: 'Shape of passed values is (0, 2, 0), indices imply (2, 2)'
+=========================== short test summary info ===========================
+FAILED tmp_check_PY_070_test.py::test_construction_error_matching_shapes - Va...
+FAILED tmp_check_PY_070_test.py::test_construction_error_reversed_shapes - Va...
+FAILED tmp_check_PY_070_test.py::test_construction_error_shape_mismatch - Ass...
+FAILED tmp_check_PY_070_test.py::test_construction_error_shape_mismatch_with_exception
+FAILED tmp_check_PY_070_test.py::test_construction_error_invalid_tot_items - ...
+FAILED tmp_check_PY_070_test.py::test_construction_error_invalid_block_shape
+6 failed, 1 passed in 0.07s"
+PY-071,gpt-4o-mini-2024-07-18,ok_but_not_verified,4,True,100.0,generated_tests_v3\PY-071_test.py,0.076671,44.97,"...F..                                                                   [100%]
+================================== FAILURES ===================================
+_______________ test_rehydrate_skeleton_class_invalid_registry ________________
+tmp_check_PY_071_test.py:62: in test_rehydrate_skeleton_class_invalid_registry
+    assert len(result.registered_subclasses) == 0
+E   AssertionError: assert 10 == 0
+E    +  where 10 = len(['n', 'o', 't', '_', 'a', '_', ...])
+E    +    where ['n', 'o', 't', '_', 'a', '_', ...] = <tmp_check_PY_071_test.StubSkeletonClass object at 0x0000020BBF825E00>.registered_subclasses
+=========================== short test summary info ===========================
+FAILED tmp_check_PY_071_test.py::test_rehydrate_skeleton_class_invalid_registry
+1 failed, 5 passed in 0.08s"
+PY-072,gpt-4o-mini-2024-07-18,ok,0,True,91.30434782608695,generated_tests_v3\PY-072_test.py,0.077131,9.0,
+PY-073,gpt-4o-mini-2024-07-18,ok_but_not_verified,4,True,100.0,generated_tests_v3\PY-073_test.py,0.07848,21.32," '  ', '   ']) == ['', '  ', '   ']
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+functions\PY_073.py:11: in trim_front
+    while len(strings) > 0 and all(x[0] == ' ' for x in trimmed):
+                               ^^^
+functions\PY_073.py:11: in <genexpr>
+    while len(strings) > 0 and all(x[0] == ' ' for x in trimmed):
+                                   ^^^^
+E   IndexError: string index out of range
+________________________ test_trim_front_invalid_input ________________________
+tmp_check_PY_073_test.py:17: in test_trim_front_invalid_input
+    assert trim_front(['']) == ['']
+           ^^^^^^^^^^^^^^^^
+functions\PY_073.py:11: in trim_front
+    while len(strings) > 0 and all(x[0] == ' ' for x in trimmed):
+                               ^^^
+functions\PY_073.py:11: in <genexpr>
+    while len(strings) > 0 and all(x[0] == ' ' for x in trimmed):
+                                   ^^^^
+E   IndexError: string index out of range
+=========================== short test summary info ===========================
+FAILED tmp_check_PY_073_test.py::test_trim_front_edge_cases - IndexError: str...
+FAILED tmp_check_PY_073_test.py::test_trim_front_invalid_input - IndexError: ...
+2 failed, 1 passed in 0.06s"
+PY-074,gpt-4o-mini-2024-07-18,ok_but_not_verified,4,True,91.30434782608695,generated_tests_v3\PY-074_test.py,0.080123,31.84,"[DataFrame({'A': [1, 2]})._to_blocks()])
+                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\pandas\core\generic.py:6206: in __getattr__
+    return object.__getattribute__(self, name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: 'DataFrame' object has no attribute '_to_blocks'
+__________ test_extend_blocks_with_block_manager_and_existing_blocks __________
+tmp_check_PY_074_test.py:57: in test_extend_blocks_with_block_manager_and_existing_blocks
+    block_manager = BlockManager.from_blocks([DataFrame({'A': [1, 2]})._to_blocks()])
+                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\pandas\core\generic.py:6206: in __getattr__
+    return object.__getattribute__(self, name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: 'DataFrame' object has no attribute '_to_blocks'
+=========================== short test summary info ===========================
+FAILED tmp_check_PY_074_test.py::test_extend_blocks_with_block_manager - Attr...
+FAILED tmp_check_PY_074_test.py::test_extend_blocks_with_block_manager_and_existing_blocks
+2 failed, 8 passed in 0.64s"
+PY-075,gpt-4o-mini-2024-07-18,ok_but_not_verified,4,True,100.0,generated_tests_v3\PY-075_test.py,0.082582,47.56,"d line....Fourth line.') == ('Second line...'Third line.')
+E     
+E     At index 0 diff: 'Third line.' != 'Second line.'
+E     Use -v to get more diff
+______________________ test_get_corpus_line_empty_lines _______________________
+tmp_check_PY_075_test.py:70: in test_get_corpus_line_empty_lines
+    result1 = get_corpus_line(stub, 0)
+              ^^^^^^^^^^^^^^^^^^^^^^^^
+functions\PY_075.py:69: in get_corpus_line
+    assert t2 != """"
+           ^^^^^^^^
+E   AssertionError
+_______________________ test_get_corpus_line_empty_file _______________________
+tmp_check_PY_075_test.py:102: in test_get_corpus_line_empty_file
+    get_corpus_line(stub, 0)
+functions\PY_075.py:41: in get_corpus_line
+    t1 = next(self.file).strip()
+         ^^^^^^^^^^^^^^^
+E   StopIteration
+=========================== short test summary info ===========================
+FAILED tmp_check_PY_075_test.py::test_get_corpus_line_on_memory_edge_case - I...
+FAILED tmp_check_PY_075_test.py::test_get_corpus_line_file_mode - AssertionEr...
+FAILED tmp_check_PY_075_test.py::test_get_corpus_line_empty_lines - Assertion...
+FAILED tmp_check_PY_075_test.py::test_get_corpus_line_empty_file - StopIteration
+4 failed, 2 passed in 0.06s"
+PY-076,gpt-4o-mini-2024-07-18,ok_but_not_verified,4,True,100.0,generated_tests_v3\PY-076_test.py,0.084679,43.47,".........FF..                                                            [100%]
+================================== FAILURES ===================================
+_____________________ test_preprocess_sgm_invalid_segment _____________________
+tmp_check_PY_076_test.py:61: in test_preprocess_sgm_invalid_segment
+    assert result == line  # Should return the original line since it's not a valid segment
+    ^^^^^^^^^^^^^^^^^^^^^
+E   AssertionError: assert None == '<seg>Content inside segment'
+______________________ test_preprocess_sgm_empty_string _______________________
+tmp_check_PY_076_test.py:67: in test_preprocess_sgm_empty_string
+    assert result == """"  # Should return empty string as is
+    ^^^^^^^^^^^^^^^^^^^
+E   AssertionError: assert None == ''
+=========================== short test summary info ===========================
+FAILED tmp_check_PY_076_test.py::test_preprocess_sgm_invalid_segment - Assert...
+FAILED tmp_check_PY_076_test.py::test_preprocess_sgm_empty_string - Assertion...
+2 failed, 11 passed in 0.08s"
+PY-077,gpt-4o-mini-2024-07-18,ok,1,True,100.0,generated_tests_v3\PY-077_test.py,0.086297,39.26,
+PY-078,gpt-4o-mini-2024-07-18,ok_but_not_verified,4,True,100.0,generated_tests_v3\PY-078_test.py,0.088328,36.84,"FAILURES ===================================
+____________________ test_is_uniform_join_units_edge_cases ____________________
+tmp_check_PY_078_test.py:29: in test_is_uniform_join_units_edge_cases
+    assert is_uniform_join_units(join_units) is False
+E   assert True is False
+E    +  where True = is_uniform_join_units([<tmp_check_PY_078_test.StubJoinUnit object at 0x000001C931E36060>, <tmp_check_PY_078_test.StubJoinUnit object at 0x000001C931E3DFD0>, <tmp_check_PY_078_test.StubJoinUnit object at 0x000001C931DA7CE0>])
+__________________ test_is_uniform_join_units_invalid_input ___________________
+tmp_check_PY_078_test.py:53: in test_is_uniform_join_units_invalid_input
+    assert is_uniform_join_units(join_units) is False
+E   assert True is False
+E    +  where True = is_uniform_join_units([<tmp_check_PY_078_test.StubJoinUnit object at 0x000001C931E71250>, <tmp_check_PY_078_test.StubJoinUnit object at 0x000001C931E71B50>])
+=========================== short test summary info ===========================
+FAILED tmp_check_PY_078_test.py::test_is_uniform_join_units_edge_cases - asse...
+FAILED tmp_check_PY_078_test.py::test_is_uniform_join_units_invalid_input - a...
+2 failed, 1 passed in 0.06s"
+PY-079,gpt-4o-mini-2024-07-18,ok_but_not_verified,4,True,100.0,generated_tests_v3\PY-079_test.py,0.089449,21.07,".F..                                                                     [100%]
+================================== FAILURES ===================================
+___________________________ test_factorial_with_mod ___________________________
+tmp_check_PY_079_test.py:13: in test_factorial_with_mod
+    assert factorial(10, mod=100) == 80
+E   assert 0 == 80
+E    +  where 0 = factorial(10, mod=100)
+=========================== short test summary info ===========================
+FAILED tmp_check_PY_079_test.py::test_factorial_with_mod - assert 0 == 80
+1 failed, 3 passed in 0.06s"
+PY-080,gpt-4o-mini-2024-07-18,ok_but_not_verified,4,True,94.28571428571428,generated_tests_v3\PY-080_test.py,0.090565,21.31,"F.F                                                                      [100%]
+================================== FAILURES ===================================
+_________________________ test_three_sum_normal_cases _________________________
+tmp_check_PY_080_test.py:7: in test_three_sum_normal_cases
+    assert three_sum([-2, 0, 1, 1, 2]) == {(-2, 1, 1)}
+E   assert {(-2, 0, 2), (-2, 1, 1)} == {(-2, 1, 1)}
+E     
+E     Extra items in the left set:
+E     (-2, 0, 2)
+E     Use -v to get more diff
+________________________ test_three_sum_invalid_input _________________________
+tmp_check_PY_080_test.py:18: in test_three_sum_invalid_input
+    three_sum(None)
+functions\PY_080.py:13: in three_sum
+    array.sort()
+    ^^^^^^^^^^
+E   AttributeError: 'NoneType' object has no attribute 'sort'
+=========================== short test summary info ===========================
+FAILED tmp_check_PY_080_test.py::test_three_sum_normal_cases - assert {(-2, 0...
+FAILED tmp_check_PY_080_test.py::test_three_sum_invalid_input - AttributeErro...
+2 failed, 1 passed in 0.06s"
+PY-081,gpt-4o-mini-2024-07-18,ok_but_not_verified,4,True,100.0,generated_tests_v3\PY-081_test.py,0.092951,38.96,"ger(""ProcessingTime(5 seconds)"")) == ""Triggered with ProcessingTime(5 seconds)""
+           ^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: 'str' object has no attribute 'trigger'
+______________________________ test_trigger_once ______________________________
+tmp_check_PY_081_test.py:57: in test_trigger_once
+    assert result._jwrite.trigger(result._jwrite.trigger(""Once()"")) == ""Triggered with Once()""
+           ^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: 'str' object has no attribute 'trigger'
+___________________________ test_trigger_continuous ___________________________
+tmp_check_PY_081_test.py:62: in test_trigger_continuous
+    assert result._jwrite.trigger(result._jwrite.trigger(""Continuous(10 seconds)"")) == ""Triggered with Continuous(10 seconds)""
+           ^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: 'str' object has no attribute 'trigger'
+=========================== short test summary info ===========================
+FAILED tmp_check_PY_081_test.py::test_trigger_processing_time - AttributeErro...
+FAILED tmp_check_PY_081_test.py::test_trigger_once - AttributeError: 'str' ob...
+FAILED tmp_check_PY_081_test.py::test_trigger_continuous - AttributeError: 's...
+3 failed, 7 passed in 0.06s"
+PY-082,gpt-4o-mini-2024-07-18,ok_but_not_verified,4,True,96.29629629629628,generated_tests_v3\PY-082_test.py,0.094362,22.76,"t_process_nested_expression_empty_list
+    result = process_nested_expression(stub, [])
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+functions\PY_082.py:41: in process_nested_expression
+    if mapped_names[0] == ""\\"":
+       ^^^^^^^^^^^^^^^
+E   IndexError: list index out of range
+________________ test_process_nested_expression_invalid_input _________________
+tmp_check_PY_082_test.py:44: in test_process_nested_expression_invalid_input
+    with pytest.raises(TypeError):
+         ^^^^^^^^^^^^^^^^^^^^^^^^
+E   Failed: DID NOT RAISE TypeError
+=========================== short test summary info ===========================
+FAILED tmp_check_PY_082_test.py::test_process_nested_expression_single_list
+FAILED tmp_check_PY_082_test.py::test_process_nested_expression_multiple_leaves
+FAILED tmp_check_PY_082_test.py::test_process_nested_expression_nested - Attr...
+FAILED tmp_check_PY_082_test.py::test_process_nested_expression_lambda - Asse...
+FAILED tmp_check_PY_082_test.py::test_process_nested_expression_complex_nested
+FAILED tmp_check_PY_082_test.py::test_process_nested_expression_empty_list - ...
+FAILED tmp_check_PY_082_test.py::test_process_nested_expression_invalid_input
+7 failed in 0.07s"
+PY-083,gpt-4o-mini-2024-07-18,ok,0,True,100.0,generated_tests_v3\PY-083_test.py,0.09482,8.7,
