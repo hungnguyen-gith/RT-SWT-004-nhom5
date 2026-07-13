@@ -117,7 +117,7 @@ def main():
         print(f"\n[{idx+1}/{len(df_funcs)}] Đang phân tích {func_id}...")
         
         gpt_test_dir = f"data/results/gpt_tests/{func_id}"
-        pynguin_test_dir = f"baseline/pynguin_tests/{func_id}"
+        pynguin_test_dir = f"baseline/pynguin_tests/test_{module_name}.py"
         
         print(f"  - Đo GPT:")
         ms_gpt = run_cosmic_ray(func_id, module_name, gpt_test_dir, f"session_gpt_{func_id}.sqlite")

@@ -1,7 +1,7 @@
 [cosmic-ray]
 module-path = "functions/PY_064.py"
 timeout = 10.0
-test-command = "C:/Python314/python.exe -m pytest data/results/gpt_tests/PY-064"
+test-command = "C:/Python314/python.exe -m pytest baseline/pynguin_tests/test_PY_064.py"
 
 [cosmic-ray.distributor]
 name = "local"
