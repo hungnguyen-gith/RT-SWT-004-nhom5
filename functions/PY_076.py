@@ -14,3 +14,4 @@ def preprocess_sgm(line, is_sgm):
   if line.startswith("<seg") and line.endswith("</seg>"):
     i = line.index(">")
     return line[i + 1:-6]
+  

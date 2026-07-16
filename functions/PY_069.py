@@ -13,3 +13,4 @@ def apply_axis_properties(self, axis, rot=None, fontsize=None):
                     label.set_rotation(rot)
                 if fontsize is not None:
                     label.set_fontsize(fontsize)
+                    

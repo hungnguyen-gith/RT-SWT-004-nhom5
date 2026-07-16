@@ -47,3 +47,4 @@ def bind(self, data_shapes, label_shapes=None, for_training=True,
             assert [x[0] for x in label_shapes] == self._label_names
 
         self._output_shapes = self._compute_output_shapes()
+        
