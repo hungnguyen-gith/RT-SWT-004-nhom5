@@ -1,0 +1,85 @@
+import micropip
+
+await micropip.install(["seaborn", "numpy", "matplotlib"])
+
+import matplotlib.pyplot as plt
+import seaborn as sns
+import numpy as np 
+import matplotlib.pyplot as plt
+
+# 1. Tạo dữ liệu (Min, Q1, Median, Q3, Max) khớp với biểu đồ mẫu
+data = [30.22, 41.3, 33, 48.12]
+
+# 2. Cấu hình kích thước và nền biểu đồ giống phong cách tối giản
+plt.figure(figsize=(8, 5))
+sns.set_theme(style="whitegrid") 
+
+# 3. Vẽ biểu đồ hộp với các tùy chỉnh màu sắc và ký hiệu hiển thị Mean (X)
+box_plot = sns.boxplot(
+    y=data, 
+    color="#4a86e8", 
+    width=0.5,
+    showmeans=True,  
+    meanprops={"marker": "x", "markerfacecolor": "gray", "markeredgecolor": "gray", "markersize": 10}, 
+    medianprops={"color": "#2c4d82", "linewidth": 1.5}, 
+    whiskerprops={"color": "#2c4d82"},
+    capprops={"color": "#2c4d82"}
+)
+
+# 4. Thiết lập tiêu đề và định dạng các trục
+plt.title("Distribution of Branch Coverage (%)", fontsize=16, color="#595959", pad=15)
+plt.xlabel("1", fontsize=12) 
+
+# Định dạng trục Y từ 0 đến 50, khoảng cách mỗi vạch là 5 đơn vị
+plt.ylim(-2, 52)
+plt.yticks(np.arange(0, 51, 5))
+
+# 5. Lưu biểu đồ thành file ảnh chất lượng cao để upload lên GitHub
+plt.savefig("branch_coverage_boxplot.png", dpi=300, bbox_inches='tight')
+
+# Hiển thị biểu đồ ra màn hình
+plt.show()
+
+
+import matplotlib.pyplot as plt
+
+# 1. Chuẩn bị dữ liệu chính xác theo biểu đồ mẫu
+authors = [
+    'Wang et al. (2024)', 
+    'Ryan et al. (2024)', 
+    'Aminata et al. (2025)', 
+    'Huang et al. (2026)'
+]
+coverage = [48.1, 66.0, 31.3, 30.2] # Tỷ lệ % tương ứng từ ảnh
+
+# 2. Khởi tạo khung hình và thêm lưới dọc (grid)
+fig, ax = plt.subplots(figsize=(10, 6))
+ax.set_axisbelow(True) # Đẩy đường lưới ra phía sau thanh biểu đồ
+ax.grid(axis='x', linestyle='-', color='#e0e0e0', linewidth=1) # Đường lưới dọc màu xám nhạt
+
+# 3. Vẽ các thanh ngang với màu xanh dương đồng bộ
+bars = ax.barh(authors, coverage, color='#4a86e8', height=0.45)
+
+# 4. Định dạng tiêu đề chính và text "N=4" ở góc phải
+ax.set_title("Comparison of Report Branch Coverage (%)", fontsize=16, color='#404040', pad=15)
+ax.text(1.0, 1.03, 'N=4', transform=ax.transAxes, fontsize=14, fontweight='bold', ha='right')
+
+# 5. Cấu hình trục X từ 0 đến 70, khoảng cách mỗi vạch là 10
+ax.set_xlim(0, 72)
+ax.set_xticks(range(0, 71, 10))
+
+# Tùy chỉnh font chữ cho nhãn trên các trục
+ax.tick_params(axis='both', labelsize=12, labelcolor='#404040')
+
+# 6. Loại bỏ đường khung viền (spines) xung quanh để giống phong cách tối giản của ảnh mẫu
+for spine in ['top', 'right', 'left', 'bottom']:
+    ax.spines[spine].set_visible(False)
+
+# Thay đổi khoảng cách lề dưới trục X một chút cho thoáng
+ax.tick_params(axis='x', pad=15)
+
+# 7. Lưu biểu đồ thành file ảnh chất lượng cao để up lên GitHub
+plt.savefig("branch_coverage_comparison.png", dpi=300, bbox_inches='tight')
+
+# Hiển thị biểu đồ
+plt.show()
