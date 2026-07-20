@@ -11,4 +11,4 @@ Based on these gaps, this study evaluates GPT-4o mini for generating zero-shot u
 
 •	Discussion of the strengths and weaknesses of automated unit test generation methods based on LLM versus traditional methods for Python.
 
-The remainder of the paper is organized as follows: Part II reviews research related to LLM-based unit test generation. Part III describes the research questions, dataset, experimental design, and evaluation metrics. Part IV presents and discusses the experimental results. Part V concludes the paper and suggests directions for future research. 
+The remainder of this paper is organized as follows. Section II presents the research methodology, including the experimental design, benchmark dataset, and evaluation metrics. Section III reports and discusses the experimental results. Section IV examines the threats to validity associated with this study. Finally, Section V concludes the paper and suggests directions for future research.
