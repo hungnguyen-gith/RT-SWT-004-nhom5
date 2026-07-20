@@ -1,4 +1,4 @@
-III. Results and Discussion
+III. Results
 
 A. Branch Coverage
 The experimental results reveal a clear performance difference between GPT-4o mini and Pynguin.
@@ -14,8 +14,3 @@ C. Mutation Analysis
 Mutation testing showed that both GPT-4o mini and Pynguin obtained a 0% Mutation Score on the benchmark dataset. This finding suggests that neither approach generated test suites capable of detecting the injected mutants under the current experimental setting.
 
 The results also indicate that higher branch coverage does not necessarily imply stronger fault detection capability. Structural coverage and mutation testing evaluate different aspects of test quality and therefore should be considered complementary evaluation metrics.
-
-D. Discussion
-Overall, Pynguin consistently outperformed GPT-4o mini with respect to Branch Coverage because its search-based algorithm systematically explores execution paths during test generation. In contrast, GPT-4o mini relied solely on zero-shot prompting without iterative feedback or execution guidance, often producing tests that executed successfully but covered few meaningful branches.
-
-These findings suggest that lightweight LLMs operating in a zero-shot setting remain insufficient as standalone solutions for automated Python unit testing. Nevertheless, the high completion success rate indicates that LLMs possess considerable potential as assistants for developers, particularly when integrated with search-based testing techniques or feedback-driven refinement strategies.
