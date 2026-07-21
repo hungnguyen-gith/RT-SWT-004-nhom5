@@ -1,69 +1,80 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 
-# Branch Coverage + CSR
-df = pd.read_csv("bc_csr(4).csv")
+# ===============================
+# Read CSV files
+# ===============================
+df = pd.read_csv("bc_csr.csv")
+ms_df = pd.read_csv("mutation_scores.csv")
 
-# Mutation Score
-ms_df = pd.read_csv("mutation_scores(2).csv")
+# ==================================================
+# Figure 1 - Branch Coverage Comparison
+# ==================================================
+plt.figure(figsize=(6,5))
 
-fig, ax = plt.subplots(figsize=(6,5))
-
-ax.boxplot(
-    [df['bc_gpt'], df['bc_pynguin']],
-    labels=['GPT-4o mini', 'Pynguin'],
+plt.boxplot(
+    [df["bc_gpt"], df["bc_pynguin"]],
+    labels=["GPT-4o mini", "Pynguin"],
     showmeans=True
 )
 
-ax.set_title("Branch Coverage Comparison")
-ax.set_ylabel("Branch Coverage (%)")
+plt.title("Branch Coverage Comparison")
+plt.ylabel("Branch Coverage (%)")
 
 plt.tight_layout()
 plt.savefig("bc_boxplot.png", dpi=300)
 plt.show()
 
-fig, ax = plt.subplots(figsize=(6,5))
+# ==================================================
+# Figure 2 - Mutation Score Comparison
+# ==================================================
+plt.figure(figsize=(6,5))
 
-ax.boxplot(
-    [ms_df['ms_gpt'], ms_df['ms_pynguin']],
-    labels=['GPT-4o mini', 'Pynguin'],
+plt.boxplot(
+    [ms_df["ms_gpt"], ms_df["ms_pynguin"]],
+    labels=["GPT-4o mini", "Pynguin"],
     showmeans=True
 )
 
-ax.set_title("Mutation Score Comparison")
-ax.set_ylabel("Mutation Score (%)")
+plt.title("Mutation Score Comparison")
+plt.ylabel("Mutation Score (%)")
 
 plt.tight_layout()
 plt.savefig("ms_boxplot.png", dpi=300)
 plt.show()
 
+# ==================================================
+# Figure 3 - Compilation Success Rate
+# ==================================================
+csr_gpt = df["csr_gpt"].mean() * 100
 
-csr_gpt = df['csr_gpt'].mean() * 100
-if 'csr_pynguin' in df.columns:
-    csr_pynguin = df['csr_pynguin'].mean() * 100
+if "csr_pynguin" in df.columns:
+    csr_pynguin = df["csr_pynguin"].mean() * 100
 else:
     csr_pynguin = 0
 
-labels = ['GPT-4o mini', 'Pynguin']
+labels = ["GPT-4o mini", "Pynguin"]
 values = [csr_gpt, csr_pynguin]
 
-fig, ax = plt.subplots(figsize=(5,5))
+plt.figure(figsize=(5,5))
 
-bars = ax.bar(labels, values)
+bars = plt.bar(labels, values)
 
-ax.set_title("Compilation Success Rate Comparison")
-ax.set_ylabel("Compilation Success Rate (%)")
-ax.set_ylim(0, 100)
+plt.title("Compilation Success Rate Comparison")
+plt.ylabel("Compilation Success Rate (%)")
+plt.ylim(0,100)
 
-# Hiển thị giá trị trên cột
 for bar in bars:
     h = bar.get_height()
-    ax.text(
+    plt.text(
         bar.get_x() + bar.get_width()/2,
-        h + 1,
+        h - 3,              
         f"{h:.1f}%",
-        ha='center',
-        fontsize=10
+        ha="center",
+        va="top",
+        fontsize=11,
+        fontweight="bold",
+        color="white"
     )
 
 plt.tight_layout()
