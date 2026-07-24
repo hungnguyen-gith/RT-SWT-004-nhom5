@@ -1,0 +1,8 @@
+Effort contribution
+Nguyen Hoang Hung - PL - SE180765 : 22%
+Le Quang Thang - MS - SE196526: 21%
+Nguyen Huu Khanh Duy - DG - SE196633: 20%
+Dang Nguyen Quoc Huy - LR - SE196510: 20%
+Trinh Duy Khang - RW - SE183700: 17%
+
+*Link repo: https://github.com/hungnguyen-gith/RT-SWT-004-nhom5.git
