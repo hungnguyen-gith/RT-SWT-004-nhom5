@@ -1,4 +1,0 @@
-IV. Discussion
-Overall, Pynguin consistently outperformed GPT-4o mini with respect to Branch Coverage because its search-based algorithm systematically explores execution paths during test generation. In contrast, GPT-4o mini relied solely on zero-shot prompting without iterative feedback or execution guidance, often producing tests that executed successfully but covered few meaningful branches.
-
-These findings suggest that lightweight LLMs operating in a zero-shot setting remain insufficient as standalone solutions for automated Python unit testing. Nevertheless, the high completion success rate indicates that LLMs possess considerable potential as assistants for developers, particularly when integrated with search-based testing techniques or feedback-driven refinement strategies.

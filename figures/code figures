@@ -1,112 +1,82 @@
+import pandas as pd
 import matplotlib.pyplot as plt
-import seaborn as sns
 
-sns.set_theme(style="whitegrid")
+# ===============================
+# Read CSV files
+# ===============================
+df = pd.read_csv("bc_csr.csv")
+ms_df = pd.read_csv("mutation_scores.csv")
 
+# ==================================================
+# Figure 1 - Branch Coverage Comparison
+# ==================================================
 plt.figure(figsize=(6,5))
 
-sns.boxplot(
-    data=df[['bc_gpt','bc_pynguin']],
-    palette=["#4a86e8","#f28e2b"],
-    showmeans=True,
-    meanprops={
-        "marker":"x",
-        "markeredgecolor":"black",
-        "markersize":8
-    }
+plt.boxplot(
+    [df["bc_gpt"], df["bc_pynguin"]],
+    labels=["GPT-4o mini", "Pynguin"],
+    showmeans=True
 )
 
 plt.title("Branch Coverage Comparison")
-
 plt.ylabel("Branch Coverage (%)")
 
-plt.xticks(
-    [0,1],
-    ["GPT-4o mini","Pynguin"]
-)
-
 plt.tight_layout()
-
-plt.savefig(
-    "bc_boxplot.png",
-    dpi=300
-)
-
+plt.savefig("bc_boxplot.png", dpi=300)
 plt.show()
 
+# ==================================================
+# Figure 2 - Mutation Score Comparison
+# ==================================================
 plt.figure(figsize=(6,5))
 
-sns.boxplot(
-    data=df[['ms_gpt','ms_pynguin']],
-    palette=["#4a86e8","#f28e2b"],
-    showmeans=True,
-    meanprops={
-        "marker":"x",
-        "markeredgecolor":"black",
-        "markersize":8
-    }
+plt.boxplot(
+    [ms_df["ms_gpt"], ms_df["ms_pynguin"]],
+    labels=["GPT-4o mini", "Pynguin"],
+    showmeans=True
 )
 
 plt.title("Mutation Score Comparison")
-
 plt.ylabel("Mutation Score (%)")
 
-plt.xticks(
-    [0,1],
-    ["GPT-4o mini","Pynguin"]
-)
-
 plt.tight_layout()
-
-plt.savefig(
-    "ms_boxplot.png",
-    dpi=300
-)
-
+plt.savefig("ms_boxplot.png", dpi=300)
 plt.show()
 
-gpt = df["csr_gpt"].mean()*100
+# ==================================================
+# Figure 3 - Compilation Success Rate
+# ==================================================
+csr_gpt = df["csr_gpt"].mean() * 100
 
 if "csr_pynguin" in df.columns:
-
-    pynguin = df["csr_pynguin"].mean()*100
-
-    labels = ["GPT-4o mini","Pynguin"]
-    values = [gpt,pynguin]
-
+    csr_pynguin = df["csr_pynguin"].mean() * 100
 else:
+    csr_pynguin = 0
 
-    labels = ["GPT-4o mini"]
-    values = [gpt]
+labels = ["GPT-4o mini", "Pynguin"]
+values = [csr_gpt, csr_pynguin]
 
 plt.figure(figsize=(5,5))
 
-bars = plt.bar(
-    labels,
-    values,
-    color=["#4a86e8","#f28e2b"][:len(values)]
-)
+bars = plt.bar(labels, values)
 
+plt.title("Compilation Success Rate Comparison")
 plt.ylabel("Compilation Success Rate (%)")
-
 plt.ylim(0,100)
 
 for bar in bars:
-
-    y = bar.get_height()
-
+    h = bar.get_height()
     plt.text(
-        bar.get_x()+bar.get_width()/2,
-        y+1,
-        f"{y:.1f}%",
-        ha="center"
+        bar.get_x() + bar.get_width()/2,
+        h - 3,              
+        f"{h:.1f}%",
+        ha="center",
+        va="top",
+        fontsize=11,
+        fontweight="bold",
+        color="white"
     )
 
 plt.tight_layout()
-
-plt.savefig(
-    "csr_bar.png",
-    dpi=300
-)
-
+plt.savefig("csr_bar.png", dpi=300)
 plt.show()
