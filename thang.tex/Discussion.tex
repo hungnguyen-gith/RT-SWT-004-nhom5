@@ -1,0 +1,11 @@
+\section{Discussion}
+\label{sec:discussion}
+
+\subsection{Explanation of Main Findings and Error Analysis}
+\label{subsec:explanation}
+
+Our evaluation reveals a stark contrast between the syntactic correctness of LLM-generated code and its actual semantic utility in a testing environment. 
+
+For RQ1, the GPT approach achieved a near-perfect Compilation Success Rate (98.0\%), successfully bypassing syntax and structural errors. However, this high compilation rate did not translate into structural coverage. Our results suggest that the 0.0\% median Branch Coverage for GPT may be attributed to profound semantic hallucinations during the zero-shot generation process. An in-depth error analysis of the worst-performing cases reveals a consistent pattern: instead of importing and invoking the target functions from the provided \texttt{functions/} directory, the LLM frequently hallucinated and defined its own mock classes within the test file itself. Consequently, the tests executed successfully and passed, but they only exercised the dummy mock logic rather than the actual target source code.
+
+For RQ2, both GPT and Pynguin achieved a median Mutation Score of 0.0\%. The failure of GPT is directly linked to the aforementioned hallucinations, leading to baseline validation failures (e.g., \texttt{AssertionError}, \texttt{NameError}) when integrated with the Cosmic-Ray mutation framework. Pynguin, despite achieving a 50.0\% median Branch Coverage, also failed to kill any injected mutants. Error analysis indicates that Pynguin frequently struggled with complex logic instantiation. Rather than generating robust assertions to verify outputs, Pynguin's genetic algorithm often generated test cases that would inherently crash, subsequently applying the \texttt{@pytest.mark.xfail} (expected failure) decorator to bypass test suite termination. As a result, when mutants altered the core logic, the tests still crashed and were marked as "passed" by the \texttt{xfail} handler, rendering the test suite completely blind to semantic faults.

@@ -1,0 +1,32 @@
+\section{Methodology}
+\label{sec:methodology}
+
+This section details the experimental design used to evaluate the test generation capabilities of Large Language Models compared to traditional baseline tools. The methodology is structured to ensure full reproducibility of the experiment.
+
+\subsection{Metrics}
+\label{subsec:metrics}
+
+To assess the quality of the generated test suites, we utilize three core evaluation metrics:
+
+\begin{itemize}
+    \item \textbf{Compilation Success Rate (CSR):} Measures the proportion of generated test suites that successfully compile and execute without throwing syntax or environment errors. It is defined as $CSR = \frac{N_{success}}{N_{total}} \times 100$. A threshold of $80\%$ is expected for LLM-generated code.
+    \item \textbf{Branch Coverage (BC):} Evaluates structural test adequacy by calculating the percentage of executed control-flow branches (e.g., if/else, loops) in the target source code. We utilized the \texttt{coverage} (v7.x) library alongside \texttt{pytest}.
+    \item \textbf{Mutation Score (MS):} Assesses the fault-finding capability of the test suites. We utilized the \texttt{cosmic-ray} (v8.x) mutation testing framework for Python to inject artificial faults (mutants) into the source code. The metric is calculated as $MS = \frac{M_{killed}}{M_{total}} \times 100$, where a higher score indicates a more robust test suite. \cite{demillo1978hints}
+\end{itemize}
+
+\subsection{Statistical Analysis Plan}
+\label{subsec:statistics}
+
+To ensure rigorous scientific validity, all measurements were subjected to statistical hypothesis testing using Python's \texttt{scipy.stats} and \texttt{cliffs-delta} libraries.
+
+\paragraph{Statistical Tests:} Given that branch coverage and mutation scores are typically bounded and follow non-normal (skewed) distributions, we applied the non-parametric \textbf{Wilcoxon Signed-Rank Test} to compare the performance differences between the LLM and the Pynguin baseline \cite{arcuri2011practical}. For evaluating CSR against the fixed $80\%$ threshold, an exact binomial test was utilized.
+
+\paragraph{Significance Level ($\alpha$):} Because multiple statistical tests ($n=3$) were performed on the same underlying dataset, we applied the Bonferroni correction to mitigate the risk of Type I errors. The adjusted significance level is $\alpha_{adj} = \frac{0.05}{3} \approx 0.0167$. Findings are only reported as statistically significant if $p < 0.0167$.
+
+\paragraph{Effect Size:} Practical significance was measured using \textbf{Cliff's Delta ($\delta$)}, a non-parametric effect size measure suitable for ordinal data. We interpret the magnitude of the effect size using the thresholds defined by Romano et al. \cite{romano2006appropriate}:
+\begin{itemize}
+    \item $|\delta| < 0.147$: Negligible
+    \item $0.147 \le |\delta| < 0.330$: Small
+    \item $0.330 \le |\delta| < 0.474$: Medium
+    \item $|\delta| \ge 0.474$: Large
+\end{itemize}
